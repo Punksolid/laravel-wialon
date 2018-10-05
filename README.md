@@ -1,15 +1,37 @@
-Composer Library Template
+Laravel Wialon 
 =========================
 
-If you are trying to create a new PHP Composer library, whether it will be going to submitted to packagist.org or just in your Github account, this template of files will surely help you make the process a lot easier and faster.
+install with 
+```$xslt
+composer require punksolid/laravel-wialon
+```
 
-Features
+Use the Key you need, put it in your .env file. 
+```$xslt
+WIALON_SECRET=5dce19710a5e26ab8b7b8986cb3c49e58C291791B7F0A7AEB8AFBFCEED7DC03BC48FF5F8
+```
+
+Use
 --------
+```php
+<?php
+$wialon_api = new \Punksolid\Wialon\Wialon();
 
-* PSR-4 autoloading compliant structure
-* Unit-Testing with PHPUnit
-* Comprehensive Guides and tutorial
-* Easy to use to any framework or even a plain php file
+        $units = $wialon_api->listUnits();
+        
+        dd($units);
+        /**
+        *   #collection: Illuminate\Support\Collection {#612
+        *      #items: array:14 [
+        *        0 => Punksolid\Wialon\Unit {#614
+        *          0
+        *          * +nm: "Audi RS8"
+        *         * +cls: 2
+        *          * +id: +uacl: 551920075299
+        */
+```
 
 
-I encourage that you put more information on this readme file instead of leaving it as is. See [How to make a README file](http://www.darwinbiler.com/designing-and-making-the-readme-file-for-your-github-repository/) for more info.
+
+Better documentation later, you could check the methods available
+        

@@ -12,6 +12,7 @@
 use Dotenv\Dotenv;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Validation\ValidationException;
 
 
 /**
@@ -25,8 +26,9 @@ class Wialon
     private $token = null;
     private $base_api_url = '';
     private $default_params = array();
+    private $user;
 
-
+    private $response = "";
     /// METHODS
 
     /** constructor */
@@ -115,9 +117,11 @@ class Wialon
             'token' => urlencode($token),
         );
         $result = $this->token_login(json_encode($data));
-        $json_result = json_decode($result, true);
-        if (isset($json_result['eid'])) {
-            $this->sid = $json_result['eid'];
+        $json_result = json_decode($result, false);
+
+        if (isset($json_result->eid)) {
+            $this->user = $json_result->user;
+            $this->sid = $json_result->eid;
         }
         return $result;
     }
@@ -174,7 +178,7 @@ class Wialon
 
     }
 
-    public function listNotifications():Collection
+    public function listNotifications(): Collection
     {
         $this->beforeCall();
         $properties = [
@@ -191,16 +195,16 @@ class Wialon
             'to' => 10
         ];
         $response = json_decode($this->core_search_items($properties));
-         $resources = collect($response->items)->transform(function($resource){
+        $resources = collect($response->items)->transform(function ($resource) {
             return $resource->zl = collect($resource->zl);
         });
-         $notifications = collect();
+        $notifications = collect();
 
-         foreach ($resources as $resource){
-             $notifications = $notifications->push($resource);
-         }
+        foreach ($resources as $resource) {
+            $notifications = $notifications->push($resource);
+        }
 
-         return $notifications->flatten();
+        return $notifications->flatten();
 
 //        dd($resources->last()->zl->last());
 //        return collect($notifications->items);
@@ -208,6 +212,119 @@ class Wialon
 //                return new Notification($notification);
 //            });
 
+    }
+
+    public function createGeofence($resource_id, $name, $latitude, $longitude, $radius, $type)
+    {
+        $validation = \Validator::make([
+            "resource_id" => $resource_id,
+            "name" => $name,
+            "latitude" => $latitude,
+            "longitude" => $longitude,
+            "radius" => $radius,
+            "type" => $type
+        ], [
+            "resource_id" => "required|integer",
+            "name" => "required",
+            "latitude" => "required",
+            "longitude" => "required",
+            "radius" => "required",
+            "type" => "required"
+        ]);
+        if ($validation->fails()) {
+            throw ValidationException::withMessages([
+                "inconsistency" => [
+                    "faltan mas datos"
+                ]
+            ]);
+        }
+        $this->beforeCall();
+
+        $minimum_inputs = [
+            "resource_id" => $resource_id,
+            "name" => $name,
+            "latitude" => $latitude,
+            "longitude" => $longitude,
+            "type" => $type // 3 circle
+        ];
+        $points = [
+            [
+                "x" => $minimum_inputs["latitude"],
+                "y" => $minimum_inputs["longitude"],
+                "r" => $radius
+            ]
+        ];
+        $params = [
+            "n" => $minimum_inputs["name"],             //esto es para  nombre geofence  Region-Session-Ruta-Linea
+            "d" => "test" . $minimum_inputs["name"],             //esto es para Descripcion de geofence
+            "t" => $minimum_inputs["type"],             //esto es para type: 1 - line, 2 - polygon, 3 - circle
+            "w" => 51,             //esto es para ancho de linea
+            "f" => 0x20,             //esto es para flagss
+            "tc" => 2568583984,             //esto es para color(ARGB)
+            "c" => 16733440,                //esto es para text color
+            "ts" => 12,                //esto es para font size
+            "min" => 0,               //esto es para desde el zoom
+            "max" => 18,               //esto es para hasta el zoom
+            "libId" => "",             //esto es para id of icon library , 0 - id for default icon library
+            "path" => "",              //esto es para short path to default icon
+            "p" => $points,
+            "itemId" => $minimum_inputs["resource_id"],             //esto es para resource id
+            "id" => 0,                //esto es para  geofence a modificar 0 si es nuevo
+            "callMode" => "create",              //esto es para action: create, update, delete, reset_image
+        ];
+
+        $this->response = json_decode(
+            $this->resource_update_zone(json_encode($params))
+        );
+        $this->afterCall();
+
+        $geofence = new Geofence($this->response[1]);
+
+
+        return $geofence;
+    }
+
+    public function createResource($name)
+    {
+        $this->beforeCall();
+
+        $params = array(
+            "creatorId" => $this->user->id, //obligatorio
+            "name" => $name,
+            "dataFlags" => 0x1, //dataFlag geofences
+            // "dataFlags"=>1048576, //dataFlag geofenceGroups
+            // "dataFlags"=>4611686018427387903, //  set all possible flags to resource
+            "skipCreatorCheck" => 1
+        );
+        $this->response = json_decode($this->core_create_resource($params), false);
+        $this->afterCall();
+        $resource = new Resource($this->response->item);
+        return $resource;
+
+    }
+
+    public function checkEvents()
+    {
+        $this->beforeCall();
+
+        $params = [
+            "sid" => $this->sid
+        ];
+        $handle = curl_init();
+
+        $defaults = array(
+            CURLOPT_URL => 'https://hst-api.wialon.com/avl_evts',
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $params,
+            CURLOPT_RETURNTRANSFER     => true,
+        );
+
+
+        curl_setopt_array($handle,  $defaults);
+        $this->afterCall();
+        $this->response = curl_exec($handle);
+        return json_decode($this->response);
+//        return $this->response;
     }
 
     public function beforeCall()
@@ -218,12 +335,30 @@ class Wialon
     public function afterCall()
     {
         $this->logout();
+        try {
+            if (isset($this->response->error)) {
+                $this->response = WialonError::error($this->response->error);
+                throw ValidationException::withMessages([
+                    "error" => [
+                        $this->response->error."xxxx"
+                    ]
+                ]);
+            }
+        } catch (\Exception $exception){
+            \Log::info($exception);
+            throw $exception;
+        }
+
     }
 
     /** Unknonwn methods hadler */
     public function __call($name, $args)
     {
-        return $this->call($name, count($args) === 0 ? '{}' : $args[0]);
+        if (count($args) === 0) {
+            return $this->call($name, '{}');
+        } else {
+            return $this->call($name, $args[0]);
+        }
     }
 
 

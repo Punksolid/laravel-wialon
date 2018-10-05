@@ -1,6 +1,8 @@
 <?php
+
 namespace Punksolid\Wialon\Tests;
 
+use Faker\Factory;
 use Orchestra\Testbench\TestCase;
 use Punksolid\Wialon\Wialon;
 
@@ -18,7 +20,7 @@ class WialonTest extends TestCase
     /**
      * Define environment setup.
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  \Illuminate\Foundation\Application $app
      * @return void
      */
     protected function getEnvironmentSetUp($app)
@@ -26,7 +28,7 @@ class WialonTest extends TestCase
         // Setup default database to use sqlite :memory:
 //        $app['services']->set('database.default', 'testbench');
 
-        $app['config']->set('services.wialon.token', '5dce19710a5e26ab8b7b8986cb3c49e58C291791B7F0A7AEB8AFBFCEED7DC03BC48FF5F8' );
+        $app['config']->set('services.wialon.token', '5dce19710a5e26ab8b7b8986cb3c49e58C291791B7F0A7AEB8AFBFCEED7DC03BC48FF5F8');
     }
 
     protected function setUp()
@@ -66,11 +68,6 @@ class WialonTest extends TestCase
     }
 
 
-    public function test_retrieve_units()
-    {
-
-    }
-
     function getData2()
     {
         $wialon_conn = new Wialon();
@@ -95,8 +92,14 @@ class WialonTest extends TestCase
         $wialon_api = new \Punksolid\Wialon\Wialon();
 
         $units = $wialon_api->listUnits();
+        dd($units->first);
+        $this->assertObjectHasAttribute("id",$units->first(), "Unit has id");
+        $this->assertObjectHasAttribute("mu",$units->first(), "Unit has measure units");
+        $this->assertObjectHasAttribute("nm",$units->first(),"Unit has name");
+        $this->assertObjectHasAttribute("cls",$units->first(), "Unit has  superclass ID: avl_unit");
+        $this->assertObjectHasAttribute("uacl",$units->first(), "Unit has uacl current user access level for unit");
 
-        dd($units->count());
+
 
     }
 
@@ -118,4 +121,52 @@ class WialonTest extends TestCase
 
         dd($notifications->first());
     }
+
+    public function test_create_geofence()
+    {
+        $faker = Factory::create();
+
+        $wialon_api = new Wialon();
+        $resource = $wialon_api->createResource($faker->word.$faker->unique()->word);
+        $lat = $faker->latitude;
+        $lon = $faker->longitude;
+        $geofence = $wialon_api->createGeofence(
+            $resource->id,
+            $faker->word.$faker->unique()->word,
+            $lat,
+            $lon,
+            $faker->numberBetween(800,1100),
+            3
+        );
+
+        $this->assertObjectHasAttribute("n",$geofence,"Geofence has name");
+        $this->assertObjectHasAttribute("d",$geofence, "Geofence has description");
+        $this->assertObjectHasAttribute("id",$geofence, "Geofence has id");
+        $this->assertObjectHasAttribute("f",$geofence, "Geofence has flags");
+        $this->assertObjectHasAttribute("t",$geofence, "Geofence has type specification");
+        $this->assertObjectHasAttribute("e",$geofence, "Geofence has checksum");
+        $this->assertObjectHasAttribute("b",$geofence, "Geofence has configuration attributes");
+
+    }
+
+    public function test_create_resource()
+    {
+        $wialon_api = new  \Punksolid\Wialon\Wialon();
+        $resource = $wialon_api->createResource("punksolid@twitter.com");
+
+        dd($resource);
+    }
+
+    public function test_tracking_unit()
+    {
+        $wialon_api = new  \Punksolid\Wialon\Wialon();
+        $seconds = 30;
+        for ($seconds; $seconds >= 1; $seconds--) {
+            sleep(1);
+            dump($wialon_api->checkEvents());
+        }
+
+    }
+
+
 }
