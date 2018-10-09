@@ -8,6 +8,9 @@
 
 namespace Punksolid\Wialon;
 
+use Illuminate\Support\Collection;
+use Punksolid\Wialon\Geofence as Geofence;
+
 /**
  * Class Notification
  * @package Punksolid\Wialon
@@ -61,6 +64,72 @@ class Notification
             }
         }
     }
+
+    /**
+     * @param Resource $resource
+     * @param \Punksolid\Wialon\Geofence $geofence
+     * @param $units
+     * @param bool $control_type //true = entries to geofence false, exits geofence
+     * @param string $name
+     * @return null|Notification
+     * @throws \Exception
+     */
+    public static function make(Resource $resource, Geofence $geofence,Collection $units, bool $control_type, string $name): ?self
+    {
+        $api_wialon = new Wialon();
+        $api_wialon->beforeCall();
+
+        $units_arr = $units->pluck("id");
+        $params = [
+            "ma" => 0,
+            "fl" => 1,
+            "tz" => 10800,
+            "la" => "en",
+            "act" => [
+                [
+                    "t" => "message",
+                    "p" => []
+                ]
+            ],
+            "sch" => [
+                "f1" => 0,
+                "f2" => 0,
+                "t1" => 0,
+                "t2" => 0,
+                "m" => 0,
+                "y" => 0,
+                "w" => 0
+            ],
+            "txt" => "Test Notification Text",
+            "mmtd" => 3600,
+            "cdt" => 10,
+            "mast" => 0,
+            "mpst" => 0,
+            "cp" => 3600,
+            "n" => $name,
+            "un" => $units_arr,
+            "ta" => 1539031912,
+            "td" => 1539636712,
+            "trg" => [
+                "t" => "geozone",
+                "p" => [
+                    "geozone_ids" => "1", "type" => "0"
+                ]
+            ],
+            "itemId" => 18145865,
+            "id" => 0,
+            "callMode" => "create"
+        ];
+
+
+        $response = json_decode($api_wialon->resource_update_notification($params));
+
+        $unit = new static($response->item);
+
+        $api_wialon->afterCall();
+
+        return $unit;
+    }
 }
 
 
@@ -97,8 +166,6 @@ class Notification
 //		},
 //		"ct":<uint >,        /* creation time */
 //		"mt":<uint >         /* last modification time */
-
-
 
 
 //{

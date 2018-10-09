@@ -35,4 +35,40 @@ class Resource
             }
         }
     }
+
+    public static function findByName($name): ?self
+    {
+        $api_wialon = new Wialon();
+        $api_wialon->beforeCall();
+
+        $params = array(
+            'spec' => array(
+                'itemsType' => 'avl_resource',
+                'propName' => 'sys_name',
+                'propValueMask' => $name,
+                'sortType' => 'sys_name',
+                'propType' => 'property'
+            ),
+            'force' => 1,
+            'flags' => '5129',
+            'from' => 0,
+            'to' => 0);
+
+        $response = json_decode($api_wialon->core_search_items($params));
+
+        if (isset($response->error)) {
+            return null;
+        }
+        if (isset($response->items[0])){
+            $unit = new static($response->items[0]);
+        }
+
+        $api_wialon->afterCall();
+
+        if (isset($unit)){
+
+            return $unit;
+        }
+        return null;
+    }
 }

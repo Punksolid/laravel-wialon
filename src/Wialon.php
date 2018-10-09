@@ -26,7 +26,7 @@ class Wialon
     private $token = null;
     private $base_api_url = '';
     private $default_params = array();
-    private $user;
+    public $user;
 
     private $response = "";
     /// METHODS
@@ -37,7 +37,6 @@ class Wialon
 
 //        $this->token = \Config::get("services",$token);
         $this->token = config('services.wialon.token', $token);
-
 
         $this->sid = $sid;
         $this->default_params = array_replace(array(), (array)$extra_params);
@@ -59,7 +58,7 @@ class Wialon
     /** update extra parameters */
     public function update_extra_params($params)
     {
-        $this->default_params = array_replace($this->default_params, $extra_params);
+        $this->default_params = array_replace($this->default_params, $params);
     }
 
     /** RemoteAPI request performer
@@ -327,6 +326,21 @@ class Wialon
 //        return $this->response;
     }
 
+    public function createUnit($name): Unit
+    {
+
+        $unit = Unit::make($name);
+
+        return $unit;
+    }
+
+    public function destroyUnit(Unit $unit):bool
+    {
+
+        return $unit->destroy();
+
+    }
+
     public function beforeCall()
     {
         $this->login($this->token);
@@ -335,19 +349,19 @@ class Wialon
     public function afterCall()
     {
         $this->logout();
-        try {
+//        try {
             if (isset($this->response->error)) {
                 $this->response = WialonError::error($this->response->error);
                 throw ValidationException::withMessages([
                     "error" => [
-                        $this->response->error."xxxx"
+                        $this->response."xxxx"
                     ]
                 ]);
             }
-        } catch (\Exception $exception){
-            \Log::info($exception);
-            throw $exception;
-        }
+//        } catch (\Exception $exception){
+//            \Log::info($exception);
+//            throw $exception;
+//        }
 
     }
 

@@ -32,7 +32,7 @@ class WialonError
     /// METHODS
 
     /** error message generator */
-    public static function error($code = '', $text = '')
+    public static function error($code = '', $text = ''):string
     {
         $code = intval($code);
         if (isset(self::$errors[$code]))

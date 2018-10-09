@@ -4,6 +4,10 @@ namespace Punksolid\Wialon\Tests;
 
 use Faker\Factory;
 use Orchestra\Testbench\TestCase;
+use Punksolid\Wialon\Geofence;
+use Punksolid\Wialon\Notification;
+use Punksolid\Wialon\Resource;
+use Punksolid\Wialon\Unit;
 use Punksolid\Wialon\Wialon;
 
 /**
@@ -92,13 +96,12 @@ class WialonTest extends TestCase
         $wialon_api = new \Punksolid\Wialon\Wialon();
 
         $units = $wialon_api->listUnits();
-        dd($units->first);
-        $this->assertObjectHasAttribute("id",$units->first(), "Unit has id");
-        $this->assertObjectHasAttribute("mu",$units->first(), "Unit has measure units");
-        $this->assertObjectHasAttribute("nm",$units->first(),"Unit has name");
-        $this->assertObjectHasAttribute("cls",$units->first(), "Unit has  superclass ID: avl_unit");
-        $this->assertObjectHasAttribute("uacl",$units->first(), "Unit has uacl current user access level for unit");
 
+        $this->assertObjectHasAttribute("id", $units->first(), "Unit has id");
+        $this->assertObjectHasAttribute("mu", $units->first(), "Unit has measure units");
+        $this->assertObjectHasAttribute("nm", $units->first(), "Unit has name");
+        $this->assertObjectHasAttribute("cls", $units->first(), "Unit has  superclass ID: avl_unit");
+        $this->assertObjectHasAttribute("uacl", $units->first(), "Unit has uacl current user access level for unit");
 
 
     }
@@ -127,34 +130,66 @@ class WialonTest extends TestCase
         $faker = Factory::create();
 
         $wialon_api = new Wialon();
-        $resource = $wialon_api->createResource($faker->word.$faker->unique()->word);
+        $resource = $wialon_api->createResource($faker->word . $faker->unique()->word);
         $lat = $faker->latitude;
         $lon = $faker->longitude;
-        $geofence = $wialon_api->createGeofence(
+
+        $geofence = Geofence::make(
             $resource->id,
-            $faker->word.$faker->unique()->word,
+            $faker->word . $faker->unique()->word,
             $lat,
             $lon,
-            $faker->numberBetween(800,1100),
-            3
-        );
+            $faker->numberBetween(800, 1100),
+            3);
 
-        $this->assertObjectHasAttribute("n",$geofence,"Geofence has name");
-        $this->assertObjectHasAttribute("d",$geofence, "Geofence has description");
-        $this->assertObjectHasAttribute("id",$geofence, "Geofence has id");
-        $this->assertObjectHasAttribute("f",$geofence, "Geofence has flags");
-        $this->assertObjectHasAttribute("t",$geofence, "Geofence has type specification");
-        $this->assertObjectHasAttribute("e",$geofence, "Geofence has checksum");
-        $this->assertObjectHasAttribute("b",$geofence, "Geofence has configuration attributes");
+        $this->assertObjectHasAttribute("n", $geofence, "Geofence has name");
+        $this->assertObjectHasAttribute("d", $geofence, "Geofence has description");
+        $this->assertObjectHasAttribute("id", $geofence, "Geofence has id");
+        $this->assertObjectHasAttribute("f", $geofence, "Geofence has flags");
+        $this->assertObjectHasAttribute("t", $geofence, "Geofence has type specification");
+        $this->assertObjectHasAttribute("e", $geofence, "Geofence has checksum");
+        $this->assertObjectHasAttribute("b", $geofence, "Geofence has configuration attributes");
 
+    }
+
+    public function test_find_geofence_by_id()
+    {
+        $faker = Factory::create();
+
+        $wialon_api = new Wialon();
+        $resource = $wialon_api->createResource($faker->word . $faker->unique()->word);
+        $lat = $faker->latitude;
+        $lon = $faker->longitude;
+
+        $geofence = Geofence::make(
+            $resource->id,
+            $faker->word . $faker->unique()->word,
+            $lat,
+            $lon,
+            $faker->numberBetween(800, 1100),
+            3);
+
+        $new_geofence = Geofence::find($geofence->id);
+        $this->assertEquals($geofence->n, $new_geofence->n);
     }
 
     public function test_create_resource()
     {
+        /**
+         *
+         * Punksolid\Wialon\Resource {#233
+         * +nm: "punksolid_test3"
+         * +cls: 3
+         * +id: 18158941
+         * +mu: 0
+         * +uacl: 60606282529791
+         * }
+         *
+         */
         $wialon_api = new  \Punksolid\Wialon\Wialon();
-        $resource = $wialon_api->createResource("punksolid@twitter.com");
-
-        dd($resource);
+        $resource = $wialon_api->createResource("punksolid_test3");
+        dump($resource);
+        $this->assertObjectHasAttribute("nm", $resource);
     }
 
     public function test_tracking_unit()
@@ -168,5 +203,83 @@ class WialonTest extends TestCase
 
     }
 
+    public function test_create_unit()
+    {
+        $api_wialon = new Wialon();
 
+        $unit = $api_wialon->createUnit(
+            "BicicletaChema"
+        );
+
+        $this->assertObjectHasAttribute("id", $unit, "Unit has id");
+        $this->assertObjectHasAttribute("mu", $unit, "Unit has measure units");
+        $this->assertObjectHasAttribute("nm", $unit, "Unit has name");
+        $this->assertObjectHasAttribute("cls", $unit, "Unit has  superclass ID: avl_unit");
+        $this->assertObjectHasAttribute("uacl", $unit, "Unit has uacl current user access level for unit");
+
+    }
+
+    public function test_find_unit_by_id()
+    {
+
+        $unit = Unit::find(18158671);
+
+        $this->assertEquals("BicicletaPunksolid15", $unit->getName());
+        $this->assertObjectHasAttribute("id", $unit, "Unit has id");
+        $this->assertObjectHasAttribute("mu", $unit, "Unit has measure units");
+        $this->assertObjectHasAttribute("nm", $unit, "Unit has name");
+        $this->assertObjectHasAttribute("cls", $unit, "Unit has  superclass ID: avl_unit");
+        $this->assertObjectHasAttribute("uacl", $unit, "Unit has uacl current user access level for unit");
+
+    }
+
+    public function test_destroy_unit()
+    {
+        $api_wialon = new Wialon();
+
+        $unit = $api_wialon->createUnit(
+            "Patines2"
+        );
+
+        $this->assertEquals(true, $api_wialon->destroyUnit($unit));
+    }
+
+    public function test_create_notification()
+    {
+        $faker = new Factory();
+        $units = (new Wialon())->listUnits()->take(2);
+        $resource = Resource::findByName('punksolid_test');
+        $wialon_api = new Wialon();
+        $resource = $wialon_api->createResource($faker->word . $faker->unique()->word);
+        $lat = $faker->latitude;
+        $lon = $faker->longitude;
+
+        $geofence = $wialon_api->createGeofence(
+            $resource->id,
+            $faker->word . $faker->unique()->word,
+            $lat,
+            $lon,
+            $faker->numberBetween(800, 1100),
+            3
+        );
+
+        $notification = Notification::make(
+            $resource,
+            $geofence,
+            $units,
+            true,
+            "SeEstanRobandomiBici"
+        );
+
+
+        dd($notification);
+    }
+
+    public function test_find_resource_by_name()
+    {
+        $resource = Resource::findByName('punksolid_test');
+
+        $this->assertEquals("punksolid_test", $resource->nm);
+        $this->assertObjectHasAttribute("id",$resource);
+    }
 }
