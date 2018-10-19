@@ -2,6 +2,8 @@
 
 namespace Punksolid\Wialon\Tests;
 
+use App\Http\Resources\UsersResource;
+use App\User;
 use Faker\Factory;
 use Orchestra\Testbench\TestCase;
 use Punksolid\Wialon\Geofence;
@@ -51,23 +53,21 @@ class WialonTest extends TestCase
      */
     public function test_simple_connection_make_login()
     {
-        $wialon_token = getenv('WIALON_SECRET');
+        $wialon_token = config("services.wialon.token", "5dce19710a5e26ab8b7b8986cb3c49e58C291791B7F0A7AEB8AFBFCEED7DC03BC48FF5F8");
 
-        $wialon_api = new \Punksolid\Wialon\Wialon();
+        $wialon_api = new Wialon();
         $result = $wialon_api->login($wialon_token);
         $json = json_decode($result, true);
 
-//        print_r($json);
-//
-//        if (!isset($json['error'])) {
-//            echo $wialon_api->core_search_item('{"id":717359,"flags":0x1}');
-//            $wialon_api->logout();
-//        } else {
-//            echo \Punksolid\Wialon\WialonError::error($json['error']);
-//        }
+        if (!isset($json['error'])) {
+            echo $wialon_api->core_search_item('{"id":717359,"flags":0x1}');
+            $wialon_api->logout();
+        } else {
+            echo \Punksolid\Wialon\WialonError::error($json['error']);
+        }
 
         $this->assertArrayHasKey("eid", $json);
-        $this->assertArraySubset(["th" => getenv('WIALON_SECRET')], $json, "Makes login and retrieves eid");
+        $this->assertArraySubset(["th" => $wialon_token], $json, "Makes login and retrieves eid");
 
     }
 
@@ -117,13 +117,7 @@ class WialonTest extends TestCase
 
     }
 
-    public function test_list_notifications()
-    {
-        $wialon_api = new Wialon();
-        $notifications = $wialon_api->listNotifications();
 
-        dd($notifications->first());
-    }
 
     public function test_create_geofence()
     {
@@ -168,28 +162,10 @@ class WialonTest extends TestCase
             $lon,
             $faker->numberBetween(800, 1100),
             3);
-
+        dump("creo geofence");
         $new_geofence = Geofence::find($geofence->id);
-        $this->assertEquals($geofence->n, $new_geofence->n);
-    }
 
-    public function test_create_resource()
-    {
-        /**
-         *
-         * Punksolid\Wialon\Resource {#233
-         * +nm: "punksolid_test3"
-         * +cls: 3
-         * +id: 18158941
-         * +mu: 0
-         * +uacl: 60606282529791
-         * }
-         *
-         */
-        $wialon_api = new  \Punksolid\Wialon\Wialon();
-        $resource = $wialon_api->createResource("punksolid_test3");
-        dump($resource);
-        $this->assertObjectHasAttribute("nm", $resource);
+        $this->assertEquals($geofence->n, $new_geofence->n);
     }
 
     public function test_tracking_unit()
@@ -244,42 +220,5 @@ class WialonTest extends TestCase
         $this->assertEquals(true, $api_wialon->destroyUnit($unit));
     }
 
-    public function test_create_notification()
-    {
-        $faker = new Factory();
-        $units = (new Wialon())->listUnits()->take(2);
-        $resource = Resource::findByName('punksolid_test');
-        $wialon_api = new Wialon();
-        $resource = $wialon_api->createResource($faker->word . $faker->unique()->word);
-        $lat = $faker->latitude;
-        $lon = $faker->longitude;
 
-        $geofence = $wialon_api->createGeofence(
-            $resource->id,
-            $faker->word . $faker->unique()->word,
-            $lat,
-            $lon,
-            $faker->numberBetween(800, 1100),
-            3
-        );
-
-        $notification = Notification::make(
-            $resource,
-            $geofence,
-            $units,
-            true,
-            "SeEstanRobandomiBici"
-        );
-
-
-        dd($notification);
-    }
-
-    public function test_find_resource_by_name()
-    {
-        $resource = Resource::findByName('punksolid_test');
-
-        $this->assertEquals("punksolid_test", $resource->nm);
-        $this->assertObjectHasAttribute("id",$resource);
-    }
 }

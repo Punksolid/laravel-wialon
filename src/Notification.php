@@ -74,57 +74,150 @@ class Notification
      * @return null|Notification
      * @throws \Exception
      */
-    public static function make(Resource $resource, Geofence $geofence,Collection $units, bool $control_type, string $name): ?self
+    public static function make(Resource $resource, Geofence $geofence, Collection $units, bool $control_type = true, string $name): ?self
     {
         $api_wialon = new Wialon();
         $api_wialon->beforeCall();
 
-        $units_arr = $units->pluck("id");
-        $params = [
-            "ma" => 0,
-            "fl" => 1,
-            "tz" => 10800,
-            "la" => "en",
-            "act" => [
-                [
-                    "t" => "message",
-                    "p" => []
-                ]
-            ],
-            "sch" => [
-                "f1" => 0,
-                "f2" => 0,
-                "t1" => 0,
-                "t2" => 0,
-                "m" => 0,
-                "y" => 0,
-                "w" => 0
-            ],
-            "txt" => "Test Notification Text",
-            "mmtd" => 3600,
-            "cdt" => 10,
-            "mast" => 0,
-            "mpst" => 0,
-            "cp" => 3600,
-            "n" => $name,
-            "un" => $units_arr,
-            "ta" => 1539031912,
-            "td" => 1539636712,
-            "trg" => [
-                "t" => "geozone",
-                "p" => [
-                    "geozone_ids" => "1", "type" => "0"
-                ]
-            ],
-            "itemId" => 18145865,
-            "id" => 0,
-            "callMode" => "create"
-        ];
 
+//        $params = [
+//            "id" => 0, /* notification ID 0 when creating */
+//            "itemId" => $resource->id,
+//            "ma" => 0, /* maximal alarms count (0 - unlimited) */
+//            "fl" => 1, /* notification flags (see below) */
+//            "tz" => 10800, /* timezone */
+//            "la" => "es",
+//            "act" => [ /* actions */
+//                [
+//                    "t" => "message",
+//                    "p" => []
+//                ]
+//            ],
+//            "sch" => [ /* time limitation */
+//                "f1" => 0,
+//                "f2" => 0,
+//                "t1" => 0,
+//                "t2" => 0,
+//                "m" => 0,
+//                "y" => 0,
+//                "w" => 0
+//            ],
+//            "txt" => "Test Notification Texte",
+//            "mmtd" => 3600, /* maximal time interval between messages (seconds) */
+//            "cdt" => 10, /* timeout of alarm (seconds) */
+//            "mast" => 0, /* minimal duration of alert state (seconds) */
+//            "mpst" => 0,
+//            "cp" => 3600, /* period of control relative to current time (seconds) */
+//            "n" => $name,
+//            "un" => ["$units_arr"],
+//            "ta" =>  time() - (60 * 10), /* activation time (UNIX format) */
+//            "td" =>  0, /* deactivation time (UNIX format) */
+//            "trg" => [  /* control */
+//                "t" => "geozone",
+//                "p" => [
+//                    "geozone_ids" => $geofence->id,
+//                    "type" => "0"
+//                ]
+//            ],
+//            "callMode" => "create"
+//        ];
+
+//        $params = [
+//            'ma' => 0,
+//            'fl' => 1,
+//            'tz' => 10800,
+//            'la' => 'en',
+//            'act' =>
+//                [
+//                    0 =>
+//                        [
+//                            't' => 'message',
+//                            'p' => '{}',
+//                        ],
+//                ],
+//            'sch' =>
+//                [
+//                    'f1' => 0,
+//                    'f2' => 0,
+//                    't1' => 0,
+//                    't2' => 0,
+//                    'm' => 0,
+//                    'y' => 0,
+//                    'w' => 0,
+//                ],
+//            'txt' => 'Test Notification Text',
+//            'mmtd' => 3600,
+//            'cdt' => 10,
+//            'mast' => 0,
+//            'mpst' => 0,
+//            'cp' => 3600,
+//            'n' => 'mi nueva notificacion4',
+//            'un' =>
+//                [
+//                    0 => '734455',
+//                ],
+//            'ta' => time() - (60 * 10),
+//            'td' => 0,
+//            'trg' =>
+//                [
+//                    't' => 'geozone',
+//                    'p' =>
+//                        [
+//                            'geozone_ids' => '1',
+//                            'type' => '1',
+//                        ],
+//                ],
+//            'itemId' => 18145865,
+//            'id' => 0,
+//            'callMode' => 'create',
+//        ];
+
+        $units_arr = $units->pluck("id")->first();
+
+        $time = time() - (60 * 10);
+        $params = "{
+                \"ma\": 0,
+                \"fl\": 1,
+                \"tz\": 10800,
+                \"la\": \"en\",
+                \"act\": [{
+                    \"t\": \"message\",
+                    \"p\": {}
+                }],
+                \"sch\": {
+                    \"f1\": 0,
+                    \"f2\": 0,
+                    \"t1\": 0,
+                    \"t2\": 0,
+                    \"m\": 0,
+                    \"y\": 0,
+                    \"w\": 0
+                },
+                \"txt\": \"Test Notification Text\",
+                \"mmtd\": 3600,
+                \"cdt\": 10,
+                \"mast\": 0,
+                \"mpst\": 0,
+                \"cp\": 3600,
+                \"n\": \"$name\",
+                \"un\": [\"$units_arr\"],
+                \"ta\": $time,
+                \"td\": 0,
+                \"trg\": {
+                    \"t\": \"geozone\",
+                    \"p\": {
+                        \"geozone_ids\": \"$geofence->id\",
+                        \"type\": \"1\"
+                    }
+                },
+                \"itemId\": 18145865,
+                \"id\": 0,
+                \"callMode\": \"create\"
+            }";
 
         $response = json_decode($api_wialon->resource_update_notification($params));
 
-        $unit = new static($response->item);
+        $unit = new static($response[1]);
 
         $api_wialon->afterCall();
 
@@ -132,6 +225,58 @@ class Notification
     }
 }
 
+/** PLAYGROUND */
+$EE = [
+    'ma' => 0,
+    'fl' => 1,
+    'tz' => 10800,
+    'la' => 'en',
+    'act' =>
+        [
+            0 =>
+                [
+                    't' => 'message',
+                    'p' =>
+                        [
+                        ],
+                ],
+        ],
+    'sch' =>
+        [
+            'f1' => 0,
+            'f2' => 0,
+            't1' => 0,
+            't2' => 0,
+            'm' => 0,
+            'y' => 0,
+            'w' => 0,
+        ],
+    'txt' => 'Test Notification Text',
+    'mmtd' => 3600,
+    'cdt' => 10,
+    'mast' => 0,
+    'mpst' => 0,
+    'cp' => 3600,
+    'n' => 'mi nueva notificacion',
+    'un' =>
+        [
+            0 => '734455',
+        ],
+    'ta' => 1539975248,
+    'td' => 1540580048,
+    'trg' =>
+        [
+            't' => 'geozone',
+            'p' =>
+                [
+                    'geozone_ids' => '1',
+                    'type' => '1',
+                ],
+        ],
+    'itemId' => 18145865,
+    'id' => 0,
+    'callMode' => 'create',
+];
 
 //},
 //"ctrl_sch":{    /* maximal alarms count intervals shedule */

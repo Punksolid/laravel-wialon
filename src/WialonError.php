@@ -26,7 +26,8 @@ class WialonError
         9 => 'Authorization server is unavailable, please try again later',
         1001 => 'No message for selected interval',
         1002 => 'Item with such unique property already exists',
-        1003 => 'Only one request of given time is allowed at the moment'
+        1003 => 'Only one request of given time is allowed at the moment',
+        2014 =>	'Selected user is a creator for some system objects, thus this user cannot be bound to a new account'
     );
 
     /// METHODS

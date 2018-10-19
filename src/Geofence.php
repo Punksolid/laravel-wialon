@@ -9,6 +9,7 @@
 namespace Punksolid\Wialon;
 
 use Illuminate\Validation\ValidationException;
+use Punksolid\Wialon\WialonErrorException;
 
 /**
  * Class Geofence
@@ -34,7 +35,7 @@ class Geofence extends Item
     public $e;
     public $b;
 
-    public static function make($resource_id, $name, $latitude, $longitude, $radius, $type):self
+    public static function make($resource_id, $name, $latitude, $longitude, $radius, $type): ?self
     {
 
         $validation = \Validator::make([
@@ -103,15 +104,16 @@ class Geofence extends Item
             if (!isset($response->error)) {
                 return new self($response[1]);
             }
-        }catch (\Exception $e) {
-            dd($response);
+        } catch (\Exception $e) {
+            \Log::info("Geofence failed");
+            \Log::info(WialonError::error($response->error));
+
         }
 
 
-        dd($response);
     }
 
-    public static function find($unit_id):?self
+    public static function find($unit_id): ?self
     {
         $api_wialon = new Wialon();
         $api_wialon->beforeCall();
@@ -120,9 +122,10 @@ class Geofence extends Item
             'id' => $unit_id,
             'flags' => '1'
         ]));
-        if (isset($response->error)){
-            return null;
-        }
+//        dump($api_wialon->response);
+//        if (isset($response->error)) {
+//            return null;
+//        }
 
         $unit = new static($response->item);
 
@@ -131,5 +134,46 @@ class Geofence extends Item
         return $unit;
     }
 
+    /**
+     * Gives Geofence by exact name
+     * @param $name
+     * @return null|Geofence
+     * @throws \Punksolid\Wialon\WialonErrorException
+     */
+    public static function findByName($name): ?self
+    {
+        $api_wialon = new Wialon();
+        $api_wialon->beforeCall();
 
+        $params = array(
+            'spec' => array(
+                'itemsType' => 'avl_resource',
+                'propName' => 'zones_library',
+                'propValueMask' => $name,
+                'sortType' => 'zones_library',
+                'propType' => 'propitemname'
+            ),
+            'force' => 1,
+            'flags' => '4097',
+            'from' => 0,
+            'to' => 0);
+
+        $response = json_decode($api_wialon->core_search_items($params));
+        if (isset($response->error)) {
+            throw new WialonErrorException($response->error);
+        }
+
+
+        if (isset($response->items[0])) {
+            $resource = new Resource($response->items[0]);
+        }
+        $api_wialon->afterCall();
+
+        if (isset($resource)) {
+            $geofences = collect($resource->zl);
+
+            return new static($geofences->whereIn("n",$name)->first());
+        }
+        return null;
+    }
 }

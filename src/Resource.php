@@ -8,6 +8,9 @@
 
 namespace Punksolid\Wialon;
 
+use Illuminate\Support\Collection;
+use phpDocumentor\Reflection\DocBlock\StandardTagFactory;
+
 /**
  * Class Resource
  * @package Punksolid\Wialon
@@ -59,16 +62,71 @@ class Resource
         if (isset($response->error)) {
             return null;
         }
-        if (isset($response->items[0])){
+        if (isset($response->items[0])) {
             $unit = new static($response->items[0]);
         }
 
         $api_wialon->afterCall();
 
-        if (isset($unit)){
+        if (isset($unit)) {
 
             return $unit;
         }
         return null;
+    }
+
+    /**
+     * Destroy anything, maybe refactor to item
+     * @return bool
+     * @throws WialonErrorException
+     */
+    public function destroy(): bool
+    {
+        $api_wialon = new Wialon();
+        $api_wialon->beforeCall();
+
+        $params = [
+            "itemId" => $this->id,
+        ];
+
+        $response = json_decode($api_wialon->item_delete_item($params), false);
+
+        $api_wialon->afterCall();
+        return (bool)!empty($response);
+    }
+
+    /**
+     * List all resources
+     * @return Collection
+     * @throws WialonErrorException
+     */
+    public static function all(): Collection
+    {
+        $api_wialon = new Wialon();
+        $api_wialon->beforeCall();
+
+        $params = [
+            'spec' =>
+                [
+                    0 =>
+                        [
+                            'type' => 'type',
+                            'data' => 'avl_resource',
+                            'flags' => 1,
+                            'mode' => 0,
+                        ],
+                ],
+        ];
+
+        $response = json_decode($api_wialon->core_update_data_flags($params));
+
+        $resources = collect();
+
+        foreach ($response as $resource) {
+            $resources->push(new static($resource->d));
+        }
+
+        $api_wialon->afterCall();
+        return $resources;
     }
 }

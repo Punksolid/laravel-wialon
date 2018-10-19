@@ -11,10 +11,10 @@ namespace Punksolid\Wialon;
 
 class Item
 {
-    public function __construct($geofence)
+    public function __construct($data)
     {
-        if (!is_null($geofence)) {
-            foreach ($geofence as $property => $value) {
+        if (!is_null($data)) {
+            foreach ($data as $property => $value) {
                 $this->{$property} = $value;
             }
         }

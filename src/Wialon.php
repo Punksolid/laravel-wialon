@@ -28,7 +28,7 @@ class Wialon
     private $default_params = array();
     public $user;
 
-    private $response = "";
+    public $response = "";
     /// METHODS
 
     /** constructor */
@@ -105,7 +105,7 @@ class Wialon
         return $result;
     }
 
-    /** Login
+    /** Login with token
      * user - wialon username
      * password - password
      * return - server response
@@ -116,7 +116,7 @@ class Wialon
             'token' => urlencode($token),
         );
         $result = $this->token_login(json_encode($data));
-        $json_result = json_decode($result, false);
+        $json_result = json_decode($result);
 
         if (isset($json_result->eid)) {
             $this->user = $json_result->user;
@@ -131,8 +131,8 @@ class Wialon
     public function logout()
     {
         $result = $this->core_logout();
-        $json_result = json_decode($result, true);
-        if ($json_result && $json_result['error'] == 0)
+        $json_result = json_decode($result);
+        if ($json_result && $json_result->error == 0)
             $this->sid = '';
         return $result;
     }
@@ -194,6 +194,7 @@ class Wialon
             'to' => 10
         ];
         $response = json_decode($this->core_search_items($properties));
+
         $resources = collect($response->items)->transform(function ($resource) {
             return $resource->zl = collect($resource->zl);
         });
@@ -205,11 +206,6 @@ class Wialon
 
         return $notifications->flatten();
 
-//        dd($resources->last()->zl->last());
-//        return collect($notifications->items);
-//            ->transform(function ($notification) {
-//                return new Notification($notification);
-//            });
 
     }
 
@@ -231,11 +227,12 @@ class Wialon
             "type" => "required"
         ]);
         if ($validation->fails()) {
-            throw ValidationException::withMessages([
-                "inconsistency" => [
-                    "faltan mas datos"
-                ]
-            ]);
+            dd($validation->messages()->get());
+//            throw ValidationException::withMessages([
+//                "inconsistency" => [
+//                    "faltan mas datos"
+//                ]
+//            ]);
         }
         $this->beforeCall();
 
@@ -295,8 +292,9 @@ class Wialon
             // "dataFlags"=>4611686018427387903, //  set all possible flags to resource
             "skipCreatorCheck" => 1
         );
-        $this->response = json_decode($this->core_create_resource($params), false);
+        $this->response = json_decode($this->core_create_resource($params));
         $this->afterCall();
+
         $resource = new Resource($this->response->item);
         return $resource;
 
@@ -315,11 +313,11 @@ class Wialon
             CURLOPT_URL => 'https://hst-api.wialon.com/avl_evts',
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $params,
-            CURLOPT_RETURNTRANSFER     => true,
+            CURLOPT_RETURNTRANSFER => true,
         );
 
 
-        curl_setopt_array($handle,  $defaults);
+        curl_setopt_array($handle, $defaults);
         $this->afterCall();
         $this->response = curl_exec($handle);
         return json_decode($this->response);
@@ -334,7 +332,7 @@ class Wialon
         return $unit;
     }
 
-    public function destroyUnit(Unit $unit):bool
+    public function destroyUnit(Unit $unit): bool
     {
 
         return $unit->destroy();
@@ -349,19 +347,13 @@ class Wialon
     public function afterCall()
     {
         $this->logout();
-//        try {
-            if (isset($this->response->error)) {
-                $this->response = WialonError::error($this->response->error);
-                throw ValidationException::withMessages([
-                    "error" => [
-                        $this->response."xxxx"
-                    ]
-                ]);
-            }
-//        } catch (\Exception $exception){
-//            \Log::info($exception);
-//            throw $exception;
-//        }
+
+        if (isset($this->response['error'])) {
+
+            throw new WialonErrorException($this->response['error']);
+
+        }
+
 
     }
 
@@ -370,9 +362,13 @@ class Wialon
     {
         if (count($args) === 0) {
             return $this->call($name, '{}');
+
+
         } else {
             return $this->call($name, $args[0]);
         }
+
+
     }
 
 
