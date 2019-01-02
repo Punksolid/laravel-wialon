@@ -89,7 +89,7 @@ class Resource
             "itemId" => $this->id,
         ];
 
-        $response = json_decode($api_wialon->item_delete_item($params), false);
+        $response = json_decode($api_wialon->item_delete_item($params));
 
         $api_wialon->afterCall();
         return (bool)!empty($response);

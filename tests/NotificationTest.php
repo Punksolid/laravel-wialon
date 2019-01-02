@@ -56,7 +56,6 @@ class NotificationTest extends TestCase
             "MiNotificacion"
         );
 
-
         $this->assertEquals("MiNotificacion",$notification->n);
 
     }

@@ -91,20 +91,7 @@ class WialonTest extends TestCase
         return $dataReturn;
     }
 
-    public function test_list_units_original()
-    {
-        $wialon_api = new \Punksolid\Wialon\Wialon();
 
-        $units = $wialon_api->listUnits();
-
-        $this->assertObjectHasAttribute("id", $units->first(), "Unit has id");
-        $this->assertObjectHasAttribute("mu", $units->first(), "Unit has measure units");
-        $this->assertObjectHasAttribute("nm", $units->first(), "Unit has name");
-        $this->assertObjectHasAttribute("cls", $units->first(), "Unit has  superclass ID: avl_unit");
-        $this->assertObjectHasAttribute("uacl", $units->first(), "Unit has uacl current user access level for unit");
-
-
-    }
 
     public function test_get_user_name()
     {
@@ -118,7 +105,9 @@ class WialonTest extends TestCase
     }
 
 
-
+    /**
+     * TODO move to his own testclass that already exists
+     */
     public function test_create_geofence()
     {
         $faker = Factory::create();

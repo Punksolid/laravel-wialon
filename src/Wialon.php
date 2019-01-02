@@ -151,6 +151,7 @@ class Wialon
     /**
      * Returns Collection of Units
      * @return Collection
+     * @deprecated 
      */
     public function listUnits(): Collection
     {
