@@ -1,4 +1,6 @@
-<?php namespace Punksolid\Wialon;
+<?php
+
+namespace Punksolid\Wialon;
 
 /* Classes for working with Wialon RemoteApi using PHP
 *

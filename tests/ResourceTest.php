@@ -10,9 +10,8 @@ namespace Punksolid\Wialon\Tests;
 
 use Illuminate\Support\Collection;
 use Orchestra\Testbench\TestCase;
-use Punksolid\Wialon\Account;
-use Punksolid\Wialon\Resource;
 use Punksolid\Wialon\Wialon;
+
 
 class ResourceTest extends TestCase
 {
@@ -50,7 +49,7 @@ class ResourceTest extends TestCase
          * }
          *
          */
-        $wialon_api = new  \Punksolid\Wialon\Wialon();
+        $wialon_api = new  Wialon();
         $resource = $wialon_api->createResource("punksolid_testaaa13");
 
         $this->assertObjectHasAttribute("nm", $resource);
