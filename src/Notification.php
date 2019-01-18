@@ -159,7 +159,6 @@ class Notification
                 }
             }
         }
-        dd($notifications);
 
         $api_wialon->afterCall();
         return $notifications;
