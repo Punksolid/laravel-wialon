@@ -70,10 +70,19 @@ class NotificationTest extends TestCase
     public function test_list_notifications()
     {
 //        $this->markTestIncomplete("Reconocer la estructura estandar de una notificacion");
-        $wialon_api = new Wialon();
-        $notifications = $wialon_api->listNotifications();
-        dd($notifications);
-        dd($notifications->first());
+        //$wialon_api = new Wialon();
+        //$notifications = $wialon_api->listNotifications();
+
+        $notifications = Notification::all();
+        // Attributes existing in units too
+        $this->assertObjectHasAttribute("id", $notifications->first(), "Unit has id");
+        $this->assertObjectHasAttribute("mu", $notifications->first(), "Unit has measure units");
+        $this->assertObjectHasAttribute("nm", $notifications->first(), "Unit has name");
+        $this->assertObjectHasAttribute("cls", $notifications->first(), "Unit has  superclass ID: avl_unit");
+        $this->assertObjectHasAttribute("uacl", $notifications->first(), "Unit has uacl current user access level for unit");
+
+       // dd($notifications);
+       // dd($notifications->first());
 
     }
 }

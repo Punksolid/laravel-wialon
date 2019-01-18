@@ -180,6 +180,10 @@ class Wialon
 
     }
 
+    /**
+     * @return Collection
+     * @deprecated
+     */
     public function listNotifications(): Collection
     {
         $this->beforeCall();
