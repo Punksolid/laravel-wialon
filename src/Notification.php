@@ -34,6 +34,13 @@ use Punksolid\Wialon\Geofence as Geofence;
  * @property text $la  user language (two-lettered code)
  * @property uint $ac  alarms count
  * @property long $un array units/unit groups ids
+ *
+ * NON WIALON ALIASES
+ * @property text $name NAME
+ * @property text $control_type
+ * @property array $actions
+ * @property text $text
+ * @property object $resource
  */
 class Notification
 {
@@ -56,32 +63,65 @@ class Notification
     public $ac;    /* alarms count */
     public $un;
 
+
     public function __construct($notification)
     {
         if (!is_null($notification)) {
             foreach ($notification as $property => $value) {
                 $this->{$property} = $value;
             }
+            $this->name = $this->n;
         }
     }
 
     /**
-     * @param Resource $resource
+     * @param Resource $resource resource
      * @param \Punksolid\Wialon\Geofence $geofence
      * @param $units
-     * @param bool $control_type //true = entries to geofence false, exits geofence
+     * @param array $control_type //true = entries to geofence false, exits geofence
      * @param string $name
      * @return null|Notification
      * @throws \Exception
      */
-    public static function make(Resource $resource, Geofence $geofence, Collection $units, bool $control_type = true, string $name): ?self
+    public static function make(Resource $resource,  Collection $units, ControlType $control_type, string $name = ''): ?self
     {
+
         $api_wialon = new Wialon();
         $api_wialon->beforeCall();
 
         $units_arr = $units->pluck("id")->first();
 
         $time = time() - (60 * 10);
+
+
+//        switch ($control_type):
+//            case 'geozone':
+//                $trg = "  \"trg\": {
+//                            \"t\": \"geozone\",
+//                            \"p\": {
+//                                \"geozone_ids\": \"$geofence->id\",
+//                                \"type\": \"1\"
+//                            }
+//                        },";
+//                break;
+//            case 'speed':
+//                $trg = "  \"trg\": {
+//                            \"t\": \"speed\",
+//                            \"p\": {
+//                                \"sensor_type\": \"\",
+//                                \"sensor_name_mask\": \"\"
+//                                \"lower_bound\": \"0\"
+//                                \"upper_bound\": \"0\"
+//                                \"merge\": \"0\"
+//                                \"min_speed\": \"0\"
+//                                \"max_speed\": \"0\"
+//                            }
+//                        },";
+//                break;
+//        endswitch;
+
+        $trg = $control_type->getTrg();
+
         $params = "{
                 \"ma\": 0,
                 \"fl\": 1,
@@ -110,18 +150,11 @@ class Notification
                 \"un\": [\"$units_arr\"],
                 \"ta\": $time,
                 \"td\": 0,
-                \"trg\": {
-                    \"t\": \"geozone\",
-                    \"p\": {
-                        \"geozone_ids\": \"$geofence->id\",
-                        \"type\": \"1\"
-                    }
-                },
+                {$trg}
                 \"itemId\": 18145865,
                 \"id\": 0,
                 \"callMode\": \"create\"
             }";
-
         $response = json_decode($api_wialon->resource_update_notification($params));
 
         $unit = new static($response[1]);
@@ -154,7 +187,16 @@ class Notification
         $notifications = collect();
         foreach ($response->items as $resource) {
             if (isset($resource->unf)) {
+                $resource_basic_data = $resource;
                 foreach ($resource->unf as $notification ) {
+                    // Name attributes normalization
+                    $notification->name = $notification->nm = $notification->n;
+                    $notification->control_type  = $notification->trg;
+                    $notification->actions = $notification->act;
+                    $notification->text = $notification->txt;
+                    $notification->resource = $resource_basic_data;
+                    unset($notification->resource->unf);
+                    unset($notification->resource->zl);
                     $notifications->push(new static($notification));
                 }
             }
@@ -163,6 +205,37 @@ class Notification
         $api_wialon->afterCall();
         return $notifications;
     }
+
+
+}
+
+class NotificationType {
+    public function __construct($type)
+    {
+        if ($type == 'speed') {
+
+        } elseif ($type == 'geofence') {
+
+        }
+    }
+
+
+    public function getTrg()
+    {
+        return getTrgForGeofence();
+    }
+
+    public function getTrgForGeofence()
+    {
+        return  " \"trg\": {
+                    \"t\": \"geozone\",
+                    \"p\": {
+                        \"geozone_ids\": \"$geofence->id\",
+                        \"type\": \"1\"
+                    }
+                },";
+    }
+
 }
 
 /** PLAYGROUND */

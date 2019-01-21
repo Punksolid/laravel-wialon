@@ -8,14 +8,33 @@
 
 namespace Punksolid\Wialon\Tests;
 use Orchestra\Testbench\TestCase;
+use Punksolid\Wialon\ControlType;
 use Punksolid\Wialon\Geofence;
 use Punksolid\Wialon\Notification;
+use Punksolid\Wialon\NotificationType;
 use Punksolid\Wialon\Resource;
+use Punksolid\Wialon\Unit;
 use Punksolid\Wialon\Wialon;
 
 
 class NotificationTest extends TestCase
 {
+    /**
+     * @return array
+     * @throws \Punksolid\Wialon\WialonErrorException
+     */
+    public function getBasics(): array
+    {
+        $units = Unit::all()->take(2);
+        $resource = Resource::findByName('punksolid@twitter.com');
+
+        if ($resource) {
+            dump("encontró resource");
+
+        }
+        return array($units, $resource);
+    }
+
     /**
      * Define environment setup.
      *
@@ -33,56 +52,113 @@ class NotificationTest extends TestCase
 
     }
 
-    public function test_create_notification()
-    {
-        $units = (new Wialon())->listUnits()->take(2);
-        $resource = Resource::findByName('punksolid@twitter.com');
-
-        if ($resource){
-            dump("encontró resource");
-
-        }
-
-        $geofence = Geofence::findByName("my_geofence");
-        if ($geofence){
-            dump("encontro geocerca");
-        }
-
-        $notification = Notification::make(
-            $resource,
-            $geofence,
-            $units,
-            true,
-            "MiNotificacion"
-        );
-
-        $this->assertEquals("MiNotificacion",$notification->n);
-
-    }
-
-    public function test_find_notification()
-    {
-        $notification = Notification::find();
-        dd($notification);
-    }
 
 
     public function test_list_notifications()
     {
-//        $this->markTestIncomplete("Reconocer la estructura estandar de una notificacion");
-        //$wialon_api = new Wialon();
-        //$notifications = $wialon_api->listNotifications();
 
         $notifications = Notification::all();
-        // Attributes existing in units too
+        // Attributes especific to notifications
         $this->assertObjectHasAttribute("id", $notifications->first(), "Unit has id");
-        $this->assertObjectHasAttribute("mu", $notifications->first(), "Unit has measure units");
-        $this->assertObjectHasAttribute("nm", $notifications->first(), "Unit has name");
-        $this->assertObjectHasAttribute("cls", $notifications->first(), "Unit has  superclass ID: avl_unit");
-        $this->assertObjectHasAttribute("uacl", $notifications->first(), "Unit has uacl current user access level for unit");
-
-       // dd($notifications);
-       // dd($notifications->first());
+        $this->assertObjectHasAttribute("name", $notifications->first(), "Unit has measure units");
+        $this->assertObjectHasAttribute("nm", $notifications->first(), "Unit has measure units");
+        $this->assertObjectHasAttribute("control_type", $notifications->first(), "Unit has name");
+        $this->assertObjectHasAttribute("actions", $notifications->first(), "Unit has  superclass ID: avl_unit");
+        $this->assertObjectHasAttribute("text", $notifications->first(), "Unit has uacl current user access level for unit");
+        $this->assertObjectHasAttribute("resource", $notifications->first(), "Unit has uacl current user access level for unit");
 
     }
+
+    public function test_create_notification_by_speed_fixed_speed_limit()
+    {
+        list($units, $resource) = $this->getBasics();
+        $min_speed = 0;
+        $max_speed = 60;
+        $control_type = new ControlType('speed', [
+            'max_speed' => $max_speed,
+            'min_speed' => $min_speed]);
+
+        $notification = Notification::make(
+            $resource,
+            $units,
+            $control_type,
+            "Velocity Check"
+        );
+
+        $this->assertEquals("Velocity Check",$notification->name);
+
+    }
+
+    public function test_create_notification_by_SOS_panic_button()
+    {
+
+    }
+
+    public function test_create_notification_by_parameter_in_message()
+    {
+
+    }
+
+    public function test_create_notification_by_connection_loss()
+    {
+
+    }
+
+    public function test_create_notification_by_SMS()
+    {
+
+    }
+
+    public function test_create_notification_by_address()
+    {
+
+    }
+
+    public function test_create_notification_by_fuel_filling()
+    {
+
+    }
+
+    public function test_create_notification_by_driver()
+    {
+
+    }
+
+    public function test_create_notification_by_passenger_alarm()
+    {
+
+    }
+
+    public function test_create_notification_by_geofence()
+    {
+        list($units, $resource) = $this->getBasics();
+
+        $geofence = Geofence::findByName("my_geofence");
+
+//        $notification = Notification::make(
+//            $resource,
+//            $geofence,
+//            $units,
+//            true,
+//            "MiNotificacion"
+//        );
+
+        $control_type = new ControlType('geofence', $geofence);
+
+        $notification = Notification::make(
+            $resource,
+            $units,
+            $control_type,
+            "MiNotificacion101"
+        );
+
+        $this->assertEquals("MiNotificacion101",$notification->n);
+
+    }
+
+    public function test_create_notification_by_digital_input()
+    {
+
+    }
+
 }
