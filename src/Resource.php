@@ -129,4 +129,5 @@ class Resource
         $api_wialon->afterCall();
         return $resources;
     }
+
 }

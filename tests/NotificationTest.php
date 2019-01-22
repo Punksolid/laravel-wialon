@@ -26,8 +26,8 @@ class NotificationTest extends TestCase
     public function getBasics(): array
     {
         $units = Unit::all()->take(2);
-        $resource = Resource::findByName('punksolid@twitter.com');
-
+        // $resource = Resource::findByName('punksolid@twitter.com');
+        $resource = Resource::all()->first();
         if ($resource) {
             dump("encontró resource");
 
@@ -91,6 +91,18 @@ class NotificationTest extends TestCase
 
     public function test_create_notification_by_SOS_panic_button()
     {
+        list($units, $resource) = $this->getBasics();
+
+        $control_type = new ControlType('panic_button');
+
+        $notification = Notification::make(
+            $resource,
+            $units,
+            $control_type,
+            "PanicButton"
+        );
+
+        $this->assertEquals("PanicButton",$notification->n);
 
     }
 
@@ -134,14 +146,6 @@ class NotificationTest extends TestCase
         list($units, $resource) = $this->getBasics();
 
         $geofence = Geofence::findByName("my_geofence");
-
-//        $notification = Notification::make(
-//            $resource,
-//            $geofence,
-//            $units,
-//            true,
-//            "MiNotificacion"
-//        );
 
         $control_type = new ControlType('geofence', $geofence);
 

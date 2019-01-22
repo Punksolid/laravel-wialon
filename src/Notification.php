@@ -9,7 +9,6 @@
 namespace Punksolid\Wialon;
 
 use Illuminate\Support\Collection;
-use Punksolid\Wialon\Geofence as Geofence;
 
 /**
  * Class Notification
@@ -93,33 +92,6 @@ class Notification
 
         $time = time() - (60 * 10);
 
-
-//        switch ($control_type):
-//            case 'geozone':
-//                $trg = "  \"trg\": {
-//                            \"t\": \"geozone\",
-//                            \"p\": {
-//                                \"geozone_ids\": \"$geofence->id\",
-//                                \"type\": \"1\"
-//                            }
-//                        },";
-//                break;
-//            case 'speed':
-//                $trg = "  \"trg\": {
-//                            \"t\": \"speed\",
-//                            \"p\": {
-//                                \"sensor_type\": \"\",
-//                                \"sensor_name_mask\": \"\"
-//                                \"lower_bound\": \"0\"
-//                                \"upper_bound\": \"0\"
-//                                \"merge\": \"0\"
-//                                \"min_speed\": \"0\"
-//                                \"max_speed\": \"0\"
-//                            }
-//                        },";
-//                break;
-//        endswitch;
-
         $trg = $control_type->getTrg();
 
         $params = "{
@@ -156,7 +128,6 @@ class Notification
                 \"callMode\": \"create\"
             }";
         $response = json_decode($api_wialon->resource_update_notification($params));
-
         $unit = new static($response[1]);
 
         $api_wialon->afterCall();
@@ -208,85 +179,3 @@ class Notification
 
 
 }
-
-class NotificationType {
-    public function __construct($type)
-    {
-        if ($type == 'speed') {
-
-        } elseif ($type == 'geofence') {
-
-        }
-    }
-
-
-    public function getTrg()
-    {
-        return getTrgForGeofence();
-    }
-
-    public function getTrgForGeofence()
-    {
-        return  " \"trg\": {
-                    \"t\": \"geozone\",
-                    \"p\": {
-                        \"geozone_ids\": \"$geofence->id\",
-                        \"type\": \"1\"
-                    }
-                },";
-    }
-
-}
-
-/** PLAYGROUND */
-$EE = [
-    'ma' => 0,
-    'fl' => 1,
-    'tz' => 10800,
-    'la' => 'en',
-    'act' =>
-        [
-            0 =>
-                [
-                    't' => 'message',
-                    'p' =>
-                        [
-                        ],
-                ],
-        ],
-    'sch' =>
-        [
-            'f1' => 0,
-            'f2' => 0,
-            't1' => 0,
-            't2' => 0,
-            'm' => 0,
-            'y' => 0,
-            'w' => 0,
-        ],
-    'txt' => 'Test Notification Text',
-    'mmtd' => 3600,
-    'cdt' => 10,
-    'mast' => 0,
-    'mpst' => 0,
-    'cp' => 3600,
-    'n' => 'mi nueva notificacion',
-    'un' =>
-        [
-            0 => '734455',
-        ],
-    'ta' => 1539975248,
-    'td' => 1540580048,
-    'trg' =>
-        [
-            't' => 'geozone',
-            'p' =>
-                [
-                    'geozone_ids' => '1',
-                    'type' => '1',
-                ],
-        ],
-    'itemId' => 18145865,
-    'id' => 0,
-    'callMode' => 'create',
-];

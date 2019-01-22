@@ -13,12 +13,12 @@ use http\Exception;
 
 class ControlType
 {
-    public function __construct($type, $params)
+    public function __construct($type, $params = [])
     {
 
         $control_types_admited = [
             'speed',
-//            'panic_button',
+            'panic_button',
 //            'parameter_in_a_message',
 //            'connection_loss',
 //            'sms',
@@ -72,6 +72,13 @@ class ControlType
                     throw new \Exception("Needs a geofence object");
                 }
 
+                break;
+            case 'panic_button':
+                $this->trg = "  \"trg\": {
+                            \"t\": \"alarm\",
+                            \"p\": {
+                            }
+                        },";
                 break;
         endswitch;
     }
