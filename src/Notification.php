@@ -9,6 +9,7 @@
 namespace Punksolid\Wialon;
 
 use Illuminate\Support\Collection;
+use Punksolid\Wialon\Notification\Action;
 
 /**
  * Class Notification
@@ -82,7 +83,7 @@ class Notification
      * @return null|Notification
      * @throws \Exception
      */
-    public static function make(Resource $resource,  Collection $units, ControlType $control_type, string $name = ''): ?self
+    public static function make(Resource $resource,  Collection $units, ControlType $control_type, string $name = '', Action $action = null): ?self
     {
 
         $api_wialon = new Wialon();
@@ -93,16 +94,21 @@ class Notification
         $time = time() - (60 * 10);
 
         $trg = $control_type->getTrg();
+        if (!is_null($action)){
+            $act = $action->getAct();
+        } else {
+            $act = "\"act\": [{
+                    \"t\": \"message\",
+                    \"p\": {}
+                }],";
+        }
 
         $params = "{
                 \"ma\": 0,
                 \"fl\": 1,
                 \"tz\": 10800,
                 \"la\": \"en\",
-                \"act\": [{
-                    \"t\": \"message\",
-                    \"p\": {}
-                }],
+                {$act}
                 \"sch\": {
                     \"f1\": 0,
                     \"f2\": 0,

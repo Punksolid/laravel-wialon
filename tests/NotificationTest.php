@@ -30,7 +30,6 @@ class NotificationTest extends TestCase
         $resource = Resource::all()->first();
         if ($resource) {
             dump("encontró resource");
-
         }
         return array($units, $resource);
     }
@@ -43,7 +42,7 @@ class NotificationTest extends TestCase
      */
     protected function getEnvironmentSetUp($app)
     {
-        $app['config']->set('services.wialon.token', '5dce19710a5e26ab8b7b8986cb3c49e58C291791B7F0A7AEB8AFBFCEED7DC03BC48FF5F8');
+        $app['config']->set('services.wialon.token', '5dce19710a5e26ab8b7b8986cb3c49e58C291791B7F0A7AEB8AFBFCEED7DC03BC48FF5F8'); // wialon playground token
     }
     protected function setUp()
     {
@@ -162,6 +161,22 @@ class NotificationTest extends TestCase
 
     public function test_create_notification_by_digital_input()
     {
+
+    }
+
+    public function test_create_SOS_notification_with_webhook_trigger_appointing_dinamically()
+    {
+        $url = 'http://7b5d47c9.ngrok.io/api/v1/webhook/alert';
+
+        list($units, $resource) = $this->getBasics();
+        $control_type = new ControlType('panic_button');
+        $action = new Notification\Action('push_messages', [
+            "url" => 'https://7b5d47c9.ngrok.io'
+        ]);
+
+        $notification = Notification::make($resource, $units, $control_type, 'SOS_wialon', $action);
+
+        $this->assertEquals("SOS_wialon",$notification->name);
 
     }
 
