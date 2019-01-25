@@ -287,6 +287,12 @@ class Wialon
         return $geofence;
     }
 
+    /**
+     * @param $name
+     * @return Resource
+     * @throws WialonErrorException
+     * @deprecated use Resource::make instead
+     */
     public function createResource($name)
     {
         $this->beforeCall();
@@ -368,12 +374,18 @@ class Wialon
     public function __call($name, $args)
     {
         if (count($args) === 0) {
-            return $this->call($name, '{}');
-
+            $response = $this->call($name, '{}');
 
         } else {
-            return $this->call($name, $args[0]);
+            $response = $this->call($name, $args[0]);
         }
+        $decoded = json_decode($response);
+
+        if (isset($decoded->error) && $decoded->error != 0 && $decoded->error != 1){
+            throw new \Exception(WialonError::error($decoded->error));
+        }
+
+        return $response;
 
 
     }

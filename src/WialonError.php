@@ -15,6 +15,7 @@ class WialonError
     /// PROPERTIES
     /** list of error messages with codes */
     public static $errors = array(
+        0 => 'Successful operation (for example for logout it will be success exit)',
         1 => 'Invalid session',
         2 => 'Invalid service',
         3 => 'Invalid result',
@@ -27,13 +28,13 @@ class WialonError
         1001 => 'No message for selected interval',
         1002 => 'Item with such unique property already exists',
         1003 => 'Only one request of given time is allowed at the moment',
-        2014 =>	'Selected user is a creator for some system objects, thus this user cannot be bound to a new account'
+        2014 => 'Selected user is a creator for some system objects, thus this user cannot be bound to a new account'
     );
 
     /// METHODS
 
     /** error message generator */
-    public static function error($code = '', $text = ''):string
+    public static function error($code = '', $text = ''): string
     {
         $code = intval($code);
         if (isset(self::$errors[$code]))

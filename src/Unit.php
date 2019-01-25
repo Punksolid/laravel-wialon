@@ -24,7 +24,7 @@ use Illuminate\Support\Collection;
  * @property double $posi->x LONGITUDE
  * @property string $name Alias for $nm
  */
-class Unit
+class Unit extends Item
 {
     public $id = '';
     public $nm = '';
@@ -107,25 +107,6 @@ class Unit
         $api_wialon->afterCall();
 
         return $destroyed;
-    }
-
-    public static function find($unit_id):?self
-    {
-        $api_wialon = new Wialon();
-        $api_wialon->beforeCall();
-
-        $response = json_decode($api_wialon->core_search_item([
-            'id' => $unit_id,
-            'flags' => '1'
-        ]));
-        if (isset($response->error)){
-            return null;
-        }
-        $unit = new static($response->item);
-
-        $api_wialon->afterCall();
-
-        return $unit;
     }
 
     /**

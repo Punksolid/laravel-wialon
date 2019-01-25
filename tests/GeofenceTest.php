@@ -8,8 +8,11 @@
 
 namespace Punksolid\Wialon\Tests;
 
+use Faker\Factory;
+use function GuzzleHttp\Psr7\str;
 use Orchestra\Testbench\TestCase;
 use Punksolid\Wialon\Geofence;
+use Punksolid\Wialon\Resource;
 
 
 class GeofenceTest extends TestCase
@@ -39,5 +42,59 @@ class GeofenceTest extends TestCase
         $geofence = Geofence::findByName("my_geofence");
 
         $this->assertEquals("my_geofence", $geofence->n);
+    }
+
+
+    /**
+     * Some coordinates returns invalid input.
+     */
+    public function test_create_geofence()
+    {
+        $faker = Factory::create();
+
+        $resource = Resource::findByName('punksolid@twitter.com');
+
+        $lat = -48.742468;
+        $lon = -68.668435;
+        $lat = (string)$lat;
+        $lon = (string)$lon;
+
+        $geofence = Geofence::make(
+            $resource->id,
+            '1awesome1geofence4',
+            $lat,
+            $lon,
+            $faker->numberBetween(800, 1100),
+            3);
+
+        $this->assertObjectHasAttribute("n", $geofence, "Geofence has name");
+        $this->assertObjectHasAttribute("d", $geofence, "Geofence has description");
+        $this->assertObjectHasAttribute("id", $geofence, "Geofence has id");
+        $this->assertObjectHasAttribute("f", $geofence, "Geofence has flags");
+        $this->assertObjectHasAttribute("t", $geofence, "Geofence has type specification");
+        $this->assertObjectHasAttribute("e", $geofence, "Geofence has checksum");
+        $this->assertObjectHasAttribute("b", $geofence, "Geofence has configuration attributes");
+
+    }
+
+    public function test_find_geofence_by_id()
+    {
+        $faker = Factory::create();
+
+        $resource = Resource::findByName('punksolid@twitter.com');
+        $lat = (string)-48.742468;
+        $lon = (string)-68.668435;
+
+        $geofence = Geofence::make(
+            $resource->id,
+            $faker->word . $faker->unique()->word,
+            $lat,
+            $lon,
+            $faker->numberBetween(800, 1100),
+            3);
+
+        $new_geofence = Geofence::findById($geofence->id, $resource->id);
+
+        $this->assertEquals($geofence->n, $new_geofence->n);
     }
 }

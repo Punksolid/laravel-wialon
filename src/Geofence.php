@@ -56,7 +56,7 @@ class Geofence extends Item
         if ($validation->fails()) {
             throw ValidationException::withMessages([
                 "inconsistency" => [
-                    "faltan mas datos"
+                    "Data needed"
                 ]
             ]);
         }
@@ -70,34 +70,23 @@ class Geofence extends Item
             "longitude" => $longitude,
             "type" => $type // 3 circle
         ];
-        $points = [
-            [
-                "x" => $minimum_inputs["latitude"],
-                "y" => $minimum_inputs["longitude"],
-                "r" => $radius
-            ]
-        ];
-        $params = [
-            "n" => $minimum_inputs["name"],             //esto es para  nombre geofence  Region-Session-Ruta-Linea
-            "d" => "test" . $minimum_inputs["name"],             //esto es para Descripcion de geofence
-            "t" => $minimum_inputs["type"],             //esto es para type: 1 - line, 2 - polygon, 3 - circle
-            "w" => 51,             //esto es para ancho de linea
-            "f" => 0x20,             //esto es para flagss
-            "tc" => 2568583984,             //esto es para color(ARGB)
-            "c" => 16733440,                //esto es para text color
-            "ts" => 12,                //esto es para font size
-            "min" => 0,               //esto es para desde el zoom
-            "max" => 18,               //esto es para hasta el zoom
-            "libId" => "",             //esto es para id of icon library , 0 - id for default icon library
-            "path" => "",              //esto es para short path to default icon
-            "p" => $points,
-            "itemId" => $minimum_inputs["resource_id"],             //esto es para resource id
-            "id" => 0,                //esto es para  geofence a modificar 0 si es nuevo
-            "callMode" => "create",              //esto es para action: create, update, delete, reset_image
-        ];
 
+        $params = '{"n":"'.$name.'",
+        "d":'.$resource_id.',
+        "t":3,
+        "f":0,
+        "w":500,
+        "c":2566914041,
+        "p":[{
+            "x":'.$minimum_inputs["latitude"].',
+            "y":'.$minimum_inputs["longitude"].',
+            "r":'.$radius.
+        '}],
+        "itemId":'.$minimum_inputs["resource_id"].',
+        "id":0,
+        "callMode":"create"}';
         $response = json_decode(
-            $wialon_api->resource_update_zone(json_encode($params))
+            $wialon_api->resource_update_zone($params)
         );
         $wialon_api->afterCall();
         try {
@@ -111,27 +100,6 @@ class Geofence extends Item
         }
 
 
-    }
-
-    public static function find($unit_id): ?self
-    {
-        $api_wialon = new Wialon();
-        $api_wialon->beforeCall();
-
-        $response = json_decode($api_wialon->core_search_item([
-            'id' => $unit_id,
-            'flags' => '1'
-        ]));
-//        dump($api_wialon->response);
-//        if (isset($response->error)) {
-//            return null;
-//        }
-
-        $unit = new static($response->item);
-
-        $api_wialon->afterCall();
-
-        return $unit;
     }
 
     /**
@@ -172,8 +140,37 @@ class Geofence extends Item
         if (isset($resource)) {
             $geofences = collect($resource->zl);
 
-            return new static($geofences->whereIn("n",$name)->first());
+            return new static($geofences->whereIn("n", $name)->first());
         }
         return null;
     }
+
+    public static function findById(int $geofence_id, $resource_id):?parent
+    {
+        $api_wialon = new Wialon();
+        $api_wialon->beforeCall();
+//@todo could not use the find method because it is incompatible with Ite::find method,
+//       maybe an implements its better approach
+        
+//        $response = json_decode($api_wialon->core_search_item([
+//            'id' => $geofence_id,
+//            'flags' => '0x1C'
+//       ]));
+        $response = json_decode($api_wialon->resource_get_zone_data([
+            'itemId' => $resource_id,
+            'col' => [$geofence_id],
+            'flags' => '0x10'
+        ]));
+
+        if (isset($response->error)){
+            return null;
+        }
+
+        $unit = new static($response[0]);
+
+        $api_wialon->afterCall();
+
+        return $unit;
+    }
+
 }

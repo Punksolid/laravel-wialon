@@ -11,7 +11,7 @@ namespace Punksolid\Wialon\Tests;
 use Illuminate\Support\Collection;
 use Orchestra\Testbench\TestCase;
 use Punksolid\Wialon\Unit;
-class GeofenceTest extends TestCase
+class UnitsTest extends TestCase
 {
 
 

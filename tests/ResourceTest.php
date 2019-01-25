@@ -10,6 +10,8 @@ namespace Punksolid\Wialon\Tests;
 
 use Illuminate\Support\Collection;
 use Orchestra\Testbench\TestCase;
+use Punksolid\Wialon\Account;
+use Punksolid\Wialon\Resource;
 use Punksolid\Wialon\Wialon;
 
 
@@ -36,7 +38,7 @@ class ResourceTest extends TestCase
 
 
 
-    public function test_create_resource()
+    public function test_create_and_destroy_resource()
     {
         /**
          *
@@ -49,31 +51,33 @@ class ResourceTest extends TestCase
          * }
          *
          */
-        $wialon_api = new  Wialon();
-        $resource = $wialon_api->createResource("punksolid_testaaa13");
-
+        $resource = Resource::make('new_one_new12');
         $this->assertObjectHasAttribute("nm", $resource);
+
+
+        $this->assertTrue($resource->destroy());
     }
 
     public function test_find_resource_by_name()
     {
-        $resource = Resource::findByName('punksolid_test');
-
-        $this->assertEquals("punksolid_test", $resource->nm);
+        $resource = Resource::findByName('punksolid@twitter.com');
+        $this->assertEquals("punksolid@twitter.com", $resource->nm);
         $this->assertObjectHasAttribute("id",$resource);
     }
 
-    public function test_destroy_resource()
+    public function test_find_resource_by_id()
     {
-        $resource = Resource::findByName('doloribus');
+        $resource = Resource::find(18145865); // resource 'punksolid@twitter.com'
 
-        $this->assertTrue($resource->destroy());
-
+        $this->assertEquals("punksolid@twitter.com", $resource->nm);
+        $this->assertObjectHasAttribute("id",$resource);
     }
 
     public function test_get_info_account()
     {
-        dd(Account::details());
+
+        $account = Account::details();
+        $this->assertObjectHasAttribute("parentAccountName", $account);
     }
 
     public function test_list_resources()

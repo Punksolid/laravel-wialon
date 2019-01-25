@@ -34,7 +34,7 @@ class WialonTest extends TestCase
         // Setup default database to use sqlite :memory:
 //        $app['services']->set('database.default', 'testbench');
 
-        $app['config']->set('services.wialon.token', '5dce19710a5e26ab8b7b8986cb3c49e58C291791B7F0A7AEB8AFBFCEED7DC03BC48FF5F8');
+        $app['config']->set('services.wialon.token', '11b6e71f234078f1ca9e6944705a235bB6C1D1F551E3E263783A2354A63236306018E83E');
     }
 
     protected function setUp()
@@ -60,7 +60,7 @@ class WialonTest extends TestCase
         $json = json_decode($result, true);
 
         if (!isset($json['error'])) {
-            echo $wialon_api->core_search_item('{"id":717359,"flags":0x1}');
+            echo $wialon_api->core_search_item('{"id":717361,"flags":"0x1"}');
             $wialon_api->logout();
         } else {
             echo \Punksolid\Wialon\WialonError::error($json['error']);
@@ -91,8 +91,6 @@ class WialonTest extends TestCase
         return $dataReturn;
     }
 
-
-
     public function test_get_user_name()
     {
         $wialon_api = new \Punksolid\Wialon\Wialon();
@@ -101,70 +99,6 @@ class WialonTest extends TestCase
         $mi_user = new \Punksolid\Wialon\User($result->user);
 
         $this->assertEquals("SdkDemo", $mi_user->nm);
-
-    }
-
-
-    /**
-     * TODO move to his own testclass that already exists
-     */
-    public function test_create_geofence()
-    {
-        $faker = Factory::create();
-
-        $wialon_api = new Wialon();
-        $resource = $wialon_api->createResource($faker->word . $faker->unique()->word);
-        $lat = $faker->latitude;
-        $lon = $faker->longitude;
-
-        $geofence = Geofence::make(
-            $resource->id,
-            $faker->word . $faker->unique()->word,
-            $lat,
-            $lon,
-            $faker->numberBetween(800, 1100),
-            3);
-
-        $this->assertObjectHasAttribute("n", $geofence, "Geofence has name");
-        $this->assertObjectHasAttribute("d", $geofence, "Geofence has description");
-        $this->assertObjectHasAttribute("id", $geofence, "Geofence has id");
-        $this->assertObjectHasAttribute("f", $geofence, "Geofence has flags");
-        $this->assertObjectHasAttribute("t", $geofence, "Geofence has type specification");
-        $this->assertObjectHasAttribute("e", $geofence, "Geofence has checksum");
-        $this->assertObjectHasAttribute("b", $geofence, "Geofence has configuration attributes");
-
-    }
-
-    public function test_find_geofence_by_id()
-    {
-        $faker = Factory::create();
-
-        $wialon_api = new Wialon();
-        $resource = $wialon_api->createResource($faker->word . $faker->unique()->word);
-        $lat = $faker->latitude;
-        $lon = $faker->longitude;
-
-        $geofence = Geofence::make(
-            $resource->id,
-            $faker->word . $faker->unique()->word,
-            $lat,
-            $lon,
-            $faker->numberBetween(800, 1100),
-            3);
-        dump("creo geofence");
-        $new_geofence = Geofence::find($geofence->id);
-
-        $this->assertEquals($geofence->n, $new_geofence->n);
-    }
-
-    public function test_tracking_unit()
-    {
-        $wialon_api = new  \Punksolid\Wialon\Wialon();
-        $seconds = 30;
-        for ($seconds; $seconds >= 1; $seconds--) {
-            sleep(1);
-            dump($wialon_api->checkEvents());
-        }
 
     }
 
@@ -203,7 +137,7 @@ class WialonTest extends TestCase
         $api_wialon = new Wialon();
 
         $unit = $api_wialon->createUnit(
-            "Patines2"
+            "Patines22"
         );
 
         $this->assertEquals(true, $api_wialon->destroyUnit($unit));

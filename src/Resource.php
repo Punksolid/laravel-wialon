@@ -21,7 +21,7 @@ use phpDocumentor\Reflection\DocBlock\StandardTagFactory;
  * @property uint $mu     measure units: 0 - si, 1 - us, 2 - imperial, 3 - metric with gallons //maybe 'si' stands for International System of Units
  * @property uint $uacl  current user access level for resource
  */
-class Resource
+class Resource extends Item
 {
 
     public $nm = "";
@@ -37,6 +37,29 @@ class Resource
                 $this->{$property} = $value;
             }
         }
+    }
+
+    public static function make($name)
+    {
+        $api_wialon = new Wialon();
+        $api_wialon->beforeCall();
+
+        $params = [
+            "creatorId" => $api_wialon->user->id, //obligatorio
+            "name" => $name,
+            "dataFlags" => 0x1, //dataFlag geofences
+            // "dataFlags"=>1048576, //dataFlag geofenceGroups
+            // "dataFlags"=>4611686018427387903, //  set all possible flags to resource
+            "skipCreatorCheck" => 1
+        ];
+        $response = json_decode($api_wialon->core_create_resource($params));
+        $api_wialon->afterCall();
+        $resource = new Resource($response->item);
+
+        $api_wialon->afterCall();
+
+        return $resource;
+
     }
 
     public static function findByName($name): ?self
