@@ -44,7 +44,7 @@ class Action
                             \"t\": \"push_messages\",
                             \"p\": {
                                 \"url\": \"{$params['url']}\",
-                                \"get\": \"0\"
+                                \"get\": 0
                             }
                         }],";
                 break;

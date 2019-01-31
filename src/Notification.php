@@ -129,7 +129,7 @@ class Notification
                 \"ta\": $time,
                 \"td\": 0,
                 {$trg}
-                \"itemId\": 18145865,
+                \"itemId\": $resource->id,
                 \"id\": 0,
                 \"callMode\": \"create\"
             }";

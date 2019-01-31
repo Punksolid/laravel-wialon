@@ -151,36 +151,6 @@ class Wialon
     }
 
     /**
-     * Returns Collection of Units
-     * @return Collection
-     * @deprecated 
-     */
-    public function listUnits(): Collection
-    {
-        $this->beforeCall();
-        $properties = [
-            'spec' => [
-                'itemsType' => 'avl_unit',
-                'propName' => '',
-                'propValueMask' => '*',
-                'sortType' => 'sys_name',
-                'propType' => ''
-            ],
-            'force' => 1,
-            'flags' => 5129,
-            'from' => 0,
-            'to' => 0
-        ];
-        $units = $this->core_search_items($properties);
-        $response = json_decode($units);
-        $units = collect($response->items)->transform(function ($unit) {
-            return new Unit($unit);
-        });
-        return $units;
-
-    }
-
-    /**
      * @return Collection
      * @deprecated
      */
@@ -234,7 +204,6 @@ class Wialon
             "type" => "required"
         ]);
         if ($validation->fails()) {
-            dd($validation->messages()->get());
 //            throw ValidationException::withMessages([
 //                "inconsistency" => [
 //                    "faltan mas datos"
@@ -337,6 +306,11 @@ class Wialon
 //        return $this->response;
     }
 
+    /**
+     * @deprecated  use Unit::make instead
+     * @param $name
+     * @return Unit
+     */
     public function createUnit($name): Unit
     {
 

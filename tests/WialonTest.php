@@ -130,5 +130,15 @@ class WialonTest extends TestCase
         $this->assertEquals(true, $api_wialon->destroyUnit($unit));
     }
 
+    public function test_geocode()
+    {
+        $lat = 47.0502816;
+        $lon =17.5543392;
 
+        $api_wialon = new Wialon();
+
+        $address = $api_wialon->gisGeocode($lat,$lon);
+
+        $this->assertEquals("Padragi Utca, Veszprém, Hungary, Padragkút,",$address);
+    }
 }
