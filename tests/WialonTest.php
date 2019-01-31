@@ -118,19 +118,6 @@ class WialonTest extends TestCase
 
     }
 
-    public function test_find_unit_by_id()
-    {
-
-        $unit = Unit::find(18158671);
-
-        $this->assertEquals("BicicletaPunksolid15", $unit->getName());
-        $this->assertObjectHasAttribute("id", $unit, "Unit has id");
-        $this->assertObjectHasAttribute("mu", $unit, "Unit has measure units");
-        $this->assertObjectHasAttribute("nm", $unit, "Unit has name");
-        $this->assertObjectHasAttribute("cls", $unit, "Unit has  superclass ID: avl_unit");
-        $this->assertObjectHasAttribute("uacl", $unit, "Unit has uacl current user access level for unit");
-
-    }
 
     public function test_destroy_unit()
     {

@@ -50,6 +50,16 @@ class Unit extends Item
         }
     }
 
+    public static function findMany(array $ids):Collection
+    {
+        $units = collect();
+        foreach ($ids as $id){
+            $units->push(self::find($id));
+        }
+
+        return $units;
+    }
+
     /**
      * Alias for nm
      * @return string
