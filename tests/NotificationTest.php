@@ -43,7 +43,8 @@ class NotificationTest extends TestCase
      */
     protected function getEnvironmentSetUp($app)
     {
-        $app['config']->set('services.wialon.token', '5dce19710a5e26ab8b7b8986cb3c49e58C291791B7F0A7AEB8AFBFCEED7DC03BC48FF5F8'); // wialon playground token
+//        $app['config']->set('services.wialon.token', '5dce19710a5e26ab8b7b8986cb3c49e58C291791B7F0A7AEB8AFBFCEED7DC03BC48FF5F8'); // wialon playground token
+        $app['config']->set('services.wialon.token', '11b6e71f234078f1ca9e6944705a235bB6C1D1F551E3E263783A2354A63236306018E83E'); // privado borrar token
     }
 
     protected function setUp()
@@ -56,9 +57,9 @@ class NotificationTest extends TestCase
 
     public function test_list_notifications()
     {
-        $this->markTestSkipped("TEST TOKEN PROVIDED NOT WORKING, OTHERS WORK");
+//        $this->markTestSkipped("TEST TOKEN PROVIDED NOT WORKING, OTHERS WORK");
         $notifications = Notification::all();
-        // Attributes especific to notifications
+        // Attributes especific to notificationsSdkDemo
         $this->assertObjectHasAttribute("id", $notifications->first(), "Unit has id");
         $this->assertObjectHasAttribute("name", $notifications->first(), "Unit has measure units");
         $this->assertObjectHasAttribute("nm", $notifications->first(), "Unit has measure units");
@@ -181,4 +182,12 @@ class NotificationTest extends TestCase
 
     }
 
+    public function test_destroy_notification()
+    {
+        $this->markAsRisky("Delete Element");
+        $this->markTestSkipped("Shouldnt test on production");
+        $notification = Notification::all()->last();
+        $this->assertTrue($notification->destroy());
+
+    }
 }

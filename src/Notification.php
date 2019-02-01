@@ -183,5 +183,25 @@ class Notification
         return $notifications;
     }
 
+    public  function destroy():bool
+    {
+        $api_wialon = new Wialon();
+        $api_wialon->beforeCall();
+
+        $response = json_decode($api_wialon->resource_update_notification([
+            'itemId' => $this->resource->id,
+            'id' => $this->id,
+            'callMode' => 'delete'
+        ]));
+
+        $api_wialon->afterCall();
+        if (isset($response[0]) && $response[0] == $this->id){
+            return true;
+        }
+
+        return false;
+    }
+
+
 
 }
