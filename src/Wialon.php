@@ -319,6 +319,11 @@ class Wialon
         return $unit;
     }
 
+    /**
+     * @param Unit $unit
+     * @return bool
+     * @deprecated use Unit->destroy() instead
+     */
     public function destroyUnit(Unit $unit): bool
     {
 
@@ -355,7 +360,10 @@ class Wialon
         }
         $decoded = json_decode($response);
 
-        if (isset($decoded->error) && $decoded->error != 0 && $decoded->error != 1){
+        if (isset($decoded->error) &&
+            $decoded->error != 0 &&
+            $decoded->error != 1 &&
+            $decoded->error != 7){ // When an element dont exists return 7
             throw new \Exception(WialonError::error($decoded->error));
         }
 

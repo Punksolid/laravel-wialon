@@ -104,7 +104,6 @@ class Unit extends Item
     {
         $api_wialon = new Wialon();
         $api_wialon->beforeCall();
-
         $response = json_decode($api_wialon->item_delete_item([
             'itemId' => $this->id,
         ]));

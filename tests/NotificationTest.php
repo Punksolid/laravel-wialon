@@ -43,8 +43,7 @@ class NotificationTest extends TestCase
      */
     protected function getEnvironmentSetUp($app)
     {
-//        $app['config']->set('services.wialon.token', '5dce19710a5e26ab8b7b8986cb3c49e58C291791B7F0A7AEB8AFBFCEED7DC03BC48FF5F8'); // wialon playground token
-        $app['config']->set('services.wialon.token', '11b6e71f234078f1ca9e6944705a235bB6C1D1F551E3E263783A2354A63236306018E83E'); // privado borrar token
+        $app['config']->set('services.wialon.token', '5dce19710a5e26ab8b7b8986cb3c49e58C291791B7F0A7AEB8AFBFCEED7DC03BC48FF5F8'); // wialon playground token
     }
 
     protected function setUp()

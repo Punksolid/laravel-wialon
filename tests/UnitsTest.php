@@ -72,4 +72,11 @@ class UnitsTest extends TestCase
 
     }
 
+    public function test_destroy_unit()
+    {
+        $unit = Unit::make("testing_unit_to_destroy3");
+
+        $this->assertTrue($unit->destroy());
+    }
+
 }
