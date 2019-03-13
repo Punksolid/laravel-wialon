@@ -146,7 +146,6 @@ class Wialon
 
         $this->afterCall();
 
-//        return $items;
         return json_decode($items);
     }
 
@@ -356,6 +355,7 @@ class Wialon
             $response = $this->call($name, '{}');
 
         } else {
+//            dump($args[0]);
             $response = $this->call($name, $args[0]);
         }
         $decoded = json_decode($response);

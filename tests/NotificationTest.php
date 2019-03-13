@@ -94,6 +94,29 @@ class NotificationTest extends TestCase
         list($units, $resource) = $this->getBasics();
 
         $control_type = new ControlType('panic_button');
+        $action = new Notification\Action("push_messages",[
+            "url" => "http://api.dogoit.com/api/v1/"
+        ]);
+        $notification = Notification::make(
+            $resource,
+            $units,
+            $control_type,
+            "PanicButton",
+            $action,
+            [
+                "txt" => "TEXT NOTIFICATION EXAMPLE"
+            ]
+        );
+
+        $this->assertEquals("PanicButton",$notification->n);
+
+    }
+
+    public function test_param_message_to_hook()
+    {
+        list($units, $resource) = $this->getBasics();
+
+        $control_type = new ControlType('panic_button');
 
         $notification = Notification::make(
             $resource,
@@ -102,8 +125,7 @@ class NotificationTest extends TestCase
             "PanicButton"
         );
 
-        $this->assertEquals("PanicButton",$notification->n);
-
+        $this->assertEquals("this is the message",$notification->txt);
     }
 
     public function test_create_notification_by_parameter_in_message()

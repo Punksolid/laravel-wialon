@@ -83,7 +83,7 @@ class Notification
      * @return null|Notification
      * @throws \Exception
      */
-    public static function make(Resource $resource,  Collection $units, ControlType $control_type, string $name = '', Action $action = null): ?self
+    public static function make(Resource $resource,  Collection $units, ControlType $control_type, string $name = '', Action $action = null, $params = null): ?self
     {
 
         $api_wialon = new Wialon();
@@ -97,42 +97,44 @@ class Notification
         if (!is_null($action)){
             $act = $action->getAct();
         } else {
-            $act = "\"act\": [{
-                    \"t\": \"message\",
-                    \"p\": {}
-                }],";
+            $act = '"act": [{
+                    "t": "message",
+                    "p": {}
+                }],';
         }
 
-        $params = "{
-                \"ma\": 0,
-                \"fl\": 1,
-                \"tz\": 10800,
-                \"la\": \"en\",
-                {$act}
-                \"sch\": {
-                    \"f1\": 0,
-                    \"f2\": 0,
-                    \"t1\": 0,
-                    \"t2\": 0,
-                    \"m\": 0,
-                    \"y\": 0,
-                    \"w\": 0
+        $message = isset($params["txt"])?:'"Default Message name=%NOTIFICATION%"';
+        /** @var Object $resource */
+        $params = '{
+                "ma": 0,
+                "fl": 1,
+                "tz": 10800,
+                "la": "en",
+                '.$act.'
+                "sch": {
+                    "f1": 0,
+                    "f2": 0,
+                    "t1": 0,
+                    "t2": 0,
+                    "m": 0,
+                    "y": 0,
+                    "w": 0
                 },
-                \"txt\": \"Test Notification Text\",
-                \"mmtd\": 3600,
-                \"cdt\": 10,
-                \"mast\": 0,
-                \"mpst\": 0,
-                \"cp\": 3600,
-                \"n\": \"$name\",
-                \"un\": [\"$units_arr\"],
-                \"ta\": $time,
-                \"td\": 0,
-                {$trg}
-                \"itemId\": $resource->id,
-                \"id\": 0,
-                \"callMode\": \"create\"
-            }";
+                "txt": ' . $message . ',
+                "mmtd": 3600,
+                "cdt": 10,
+                "mast": 0,
+                "mpst": 0,
+                "cp": 3600,
+                "n": "'.$name.'",
+                "un": ["' . $units_arr. '"],
+                "ta": '.$time.',
+                "td": 0,
+                '.$trg.'
+                "itemId": '. $resource->id .',
+                "id": 0,
+                "callMode": "create"
+            }';
         $response = json_decode($api_wialon->resource_update_notification($params));
         $unit = new static($response[1]);
 
