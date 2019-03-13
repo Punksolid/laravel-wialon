@@ -103,7 +103,7 @@ class Notification
                 }],';
         }
 
-        $message = isset($params["txt"])?:'"Default Message name=%NOTIFICATION%"';
+        $message = isset($params["txt"])? $params["txt"] :'"Default Message name=%NOTIFICATION%"';
         /** @var Object $resource */
         $params = '{
                 "ma": 0,
