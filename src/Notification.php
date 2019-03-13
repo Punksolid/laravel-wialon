@@ -159,7 +159,7 @@ class Notification
             'force' => 1,
             'flags' => 5129,
             'from' => 0,
-            'to' => 10
+            'to' => 0 //this is for pagination, in 0 get all elements
         ];
         $response = json_decode($api_wialon->core_search_items($params));
 
