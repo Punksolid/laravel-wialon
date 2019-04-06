@@ -10,6 +10,7 @@ namespace Punksolid\Wialon\Tests;
 
 use Faker\Factory;
 use function GuzzleHttp\Psr7\str;
+use Illuminate\Support\Collection;
 use Orchestra\Testbench\TestCase;
 use Punksolid\Wialon\Geofence;
 use Punksolid\Wialon\Resource;
@@ -28,6 +29,7 @@ class GeofenceTest extends TestCase
     protected function getEnvironmentSetUp($app)
     {
         $app['config']->set('services.wialon.token', '5dce19710a5e26ab8b7b8986cb3c49e58C291791B7F0A7AEB8AFBFCEED7DC03BC48FF5F8');
+
     }
     protected function setUp():void
     {
@@ -96,5 +98,18 @@ class GeofenceTest extends TestCase
         $new_geofence = Geofence::findById($geofence->id, $resource->id);
 
         $this->assertEquals($geofence->n, $new_geofence->n);
+    }
+
+    public function test_list_all_geofences()
+    {
+        $geofence = Geofence::all();
+
+        $this->assertObjectHasAttribute("n", $geofence->first(), "Geofence has name");
+        $this->assertObjectHasAttribute("d", $geofence->first(), "Geofence has description");
+        $this->assertObjectHasAttribute("id", $geofence->first(), "Geofence has id");
+        $this->assertObjectHasAttribute("f", $geofence->first(), "Geofence has flags");
+        $this->assertObjectHasAttribute("t", $geofence->first(), "Geofence has type specification");
+        $this->assertObjectHasAttribute("e", $geofence->first(), "Geofence has checksum");
+        $this->assertObjectHasAttribute("b", $geofence->first(), "Geofence has configuration attributes");
     }
 }

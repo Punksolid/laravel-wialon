@@ -8,6 +8,7 @@
 
 namespace Punksolid\Wialon;
 
+use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use Punksolid\Wialon\WialonErrorException;
 
@@ -34,6 +35,15 @@ class Geofence extends Item
     public $t;
     public $e;
     public $b;
+
+
+    public function __construct($data)
+    {
+        parent::__construct($data);
+        if (isset($this->n)){
+            $this->name = $this->n;
+        }
+    }
 
     public static function make($resource_id, $name, $latitude, $longitude, $radius, $type): ?self
     {
@@ -171,6 +181,46 @@ class Geofence extends Item
         $api_wialon->afterCall();
 
         return $unit;
+    }
+
+    /**
+     * Returns all geofences of all resources
+     * @return Collection
+     * @throws \Punksolid\Wialon\WialonErrorException
+     */
+    public static function all(): Collection
+
+    {
+        $api_wialon = new Wialon();
+        $api_wialon->beforeCall();
+
+        $params = [
+            'spec' => [
+                'itemsType' => 'avl_resource',
+                'propName' => 'zones_library',
+                'propValueMask' => '*',
+                'sortType' => 'zones_library',
+                'propType' => ''
+            ],
+            'force' => 1,
+            'flags' => 4097,
+            'from' => 0,
+            'to' => 0 //this is for pagination, in 0 get all elements
+        ];
+        $response = json_decode($api_wialon->core_search_items($params));
+        $geofences = collect();
+        foreach ($response->items as $resource){
+            foreach ($resource->zl as $geofence){
+
+                $geofences->push(new static($geofence));
+
+            }
+        }
+
+        $api_wialon->afterCall();
+
+        return $geofences;
+
     }
 
 }
