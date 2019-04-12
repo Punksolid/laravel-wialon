@@ -211,7 +211,7 @@ class Geofence extends Item
         $geofences = collect();
         foreach ($response->items as $resource){
             foreach ($resource->zl as $geofence){
-
+                $geofence->rid = $resource->id;
                 $geofences->push(new static($geofence));
 
             }

@@ -107,6 +107,7 @@ class GeofenceTest extends TestCase
         $this->assertObjectHasAttribute("n", $geofence->first(), "Geofence has name");
         $this->assertObjectHasAttribute("d", $geofence->first(), "Geofence has description");
         $this->assertObjectHasAttribute("id", $geofence->first(), "Geofence has id");
+        $this->assertObjectHasAttribute("rid", $geofence->first(), "Geofence has resource rid");
         $this->assertObjectHasAttribute("f", $geofence->first(), "Geofence has flags");
         $this->assertObjectHasAttribute("t", $geofence->first(), "Geofence has type specification");
         $this->assertObjectHasAttribute("e", $geofence->first(), "Geofence has checksum");
