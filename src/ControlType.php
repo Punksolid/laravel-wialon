@@ -11,7 +11,7 @@ namespace Punksolid\Wialon;
 
 use http\Exception;
 
-class ControlType
+class ControlType implements ControlTypeInterface
 {
     public function __construct($type, $params = [])
     {
@@ -83,7 +83,7 @@ class ControlType
         endswitch;
     }
 
-    public function getTrg()
+    public function getTrg() : string
     {
         return $this->trg;
     }

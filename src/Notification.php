@@ -83,7 +83,7 @@ class Notification
      * @return null|Notification
      * @throws \Exception
      */
-    public static function make(Resource $resource,  Collection $units, ControlType $control_type, string $name = '', Action $action = null, $params = null): ?self
+    public static function make(Resource $resource,  Collection $units, ControlTypeInterface $control_type, string $name = '', Action $action = null, $params = null): ?self
     {
 
         $api_wialon = new Wialon();

@@ -44,6 +44,7 @@ class GeofenceTest extends TestCase
         $geofence = Geofence::findByName("my_geofence");
 
         $this->assertEquals("my_geofence", $geofence->n);
+        $this->assertObjectHasAttribute('rid', $geofence);
     }
 
 

@@ -149,8 +149,9 @@ class Geofence extends Item
 
         if (isset($resource)) {
             $geofences = collect($resource->zl);
-
-            return new static($geofences->whereIn("n", $name)->first());
+            $geofence = $geofences->whereIn("n", $name)->first();
+            $geofence->rid = $resource->id;
+            return new static($geofence);
         }
         return null;
     }

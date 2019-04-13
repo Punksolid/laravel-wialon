@@ -11,6 +11,8 @@ namespace Punksolid\Wialon\Tests;
 use Orchestra\Testbench\TestCase;
 use Punksolid\Wialon\ControlType;
 use Punksolid\Wialon\Geofence;
+use Punksolid\Wialon\GeofenceControlType;
+use Punksolid\Wialon\PanicButtonControlType;
 use Punksolid\Wialon\Notification;
 use Punksolid\Wialon\NotificationType;
 use Punksolid\Wialon\Resource;
@@ -93,7 +95,9 @@ class NotificationTest extends TestCase
     {
         list($units, $resource) = $this->getBasics();
 
-        $control_type = new ControlType('panic_button');
+//        $control_type2 = new ControlType('panic_button');
+
+        $control_type = new PanicButtonControlType();
         $action = new Notification\Action("push_messages",[
             "url" => "http://api.dogoit.com/api/v1/"
         ]);
@@ -102,10 +106,7 @@ class NotificationTest extends TestCase
             $units,
             $control_type,
             "PanicButton",
-            $action,
-            [
-                "txt" => "TEXT NOTIFICATION EXAMPLE"
-            ]
+            $action
         );
 
         $this->assertEquals("PanicButton",$notification->n);
@@ -168,7 +169,8 @@ class NotificationTest extends TestCase
 
         $geofence = Geofence::findByName("my_geofence");
 
-        $control_type = new ControlType('geofence', $geofence);
+//        $control_type = new ControlType('geofence', $geofence);
+        $control_type = new GeofenceControlType($geofence);
 
         $notification = Notification::make(
             $resource,
