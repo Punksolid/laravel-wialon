@@ -11,6 +11,11 @@ namespace Punksolid\Wialon;
 
 use http\Exception;
 
+/**
+ * @deprecated
+ * Class ControlType
+ * @package Punksolid\Wialon
+ */
 class ControlType implements ControlTypeInterface
 {
     public function __construct($type, $params = [])

@@ -7,7 +7,7 @@ namespace Punksolid\Wialon;
 class GeofenceControlType implements ControlTypeInterface
 {
     public $geofences;
-
+    public $geozones_ids;
 
     public function __construct(Geofence $geofence = null)
     {

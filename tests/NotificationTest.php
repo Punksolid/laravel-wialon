@@ -56,9 +56,18 @@ class NotificationTest extends TestCase
     }
 
 
+    public function test_update_txt_notification()
+    {
+        $notifications = Notification::all();
+        $notification_to_modify = $notifications->first();
+        $notification_to_modify->txt = "123ABC";
+        $notification_to_modify->update();
+
+        $this->assertEquals("123ABC", $notification_to_modify->txt);
+    }
+
     public function test_list_notifications()
     {
-//        $this->markTestSkipped("TEST TOKEN PROVIDED NOT WORKING, OTHERS WORK");
         $notifications = Notification::all();
         // Attributes especific to notificationsSdkDemo
         $this->assertObjectHasAttribute("id", $notifications->first(), "Unit has id");
@@ -69,6 +78,14 @@ class NotificationTest extends TestCase
         $this->assertObjectHasAttribute("text", $notifications->first(), "Unit has uacl current user access level for unit");
         $this->assertObjectHasAttribute("resource", $notifications->first(), "Unit has uacl current user access level for unit");
 
+    }
+
+    public function test_find_notification_by_resource_and_id_underscored()
+    {
+
+        $searched_notification = Notification::all()->first();
+        $found_notification = Notification::findByUniqueId("{$searched_notification->resource->id}_{$searched_notification->id}");
+        $this->assertEquals($searched_notification->name, $found_notification->name);
     }
 
     public function test_create_notification_by_speed_fixed_speed_limit()
