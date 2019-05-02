@@ -50,7 +50,7 @@ class ResourceTest extends TestCase
          * }
          *
          */
-        $resource = Resource::make('new_one_new12');
+        $resource = Resource::make('new_one_new12'); // you cant use a resource already defined
         $this->assertObjectHasAttribute("nm", $resource);
 
 

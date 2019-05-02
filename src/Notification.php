@@ -161,7 +161,6 @@ class Notification
     {
         $static = $update_flag = !(isset($this) && get_class($this) == __CLASS__);
         if ($update_flag){ // updating // TODO Not Working
-            dd('aaaaaaa');
             $units_arr = $this->getUnits()->pluck('id')->first(); // @todo verify if its working with more than one
 
             $time = time() - (60 * 10);
@@ -181,8 +180,8 @@ class Notification
             $id = isset($this->id) ? $this->id : 0;
 
         } else { // Creating
-            $units_arr = $units->pluck("id")->first(); // @todo verify if its working with more than one
-
+            $units_arr = $units->pluck("id")->implode(','); // @todo verify if its working with more than one
+//            dump($units_arr); // 734477
             $time = time() - (60 * 10);
 
             $trg = $control_type->getTrg();
@@ -225,7 +224,7 @@ class Notification
                 "mpst": 0,
                 "cp": 3600,
                 "n": "' . $name . '",
-                "un": ["' . $units_arr . '"],
+                "un": [' . $units_arr . '],
                 "ta": ' . $time . ',
                 "td": 0,
                 ' . $trg . '

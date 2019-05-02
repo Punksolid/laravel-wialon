@@ -180,13 +180,14 @@ class NotificationTest extends TestCase
 
     }
 
-    public function test_create_notification_by_geofence()
+
+
+    public function test_create_notification_by_enter_geofence()
     {
         list($units, $resource) = $this->getBasics();
 
         $geofence = Geofence::findByName("my_geofence");
 
-//        $control_type = new ControlType('geofence', $geofence);
         $control_type = new GeofenceControlType($geofence);
 
         $notification = Notification::make(
@@ -199,6 +200,28 @@ class NotificationTest extends TestCase
         $this->assertEquals("MiNotificacion101", $notification->n);
 
     }
+
+    public function test_create_notification_by_going_outside_geofence()
+    {
+        list($units, $resource) = $this->getBasics();
+
+        $geofence = Geofence::findByName("my_geofence");
+
+        $control_type = new GeofenceControlType($geofence);
+        $control_type->setType(1); // leaving
+
+        $notification = Notification::make(
+            $resource,
+            $units,
+            $control_type,
+            "MiNotificacion102"
+        );
+
+        $this->assertEquals("MiNotificacion102", $notification->n);
+        $this->assertEquals("1", $notification->trg_p->type);
+
+    }
+
 
     public function test_create_notification_by_digital_input()
     {
