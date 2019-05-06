@@ -45,8 +45,8 @@ class Unit extends Item
         }
 
         if (isset($this->pos)) {
-            $this->lat = $this->pos->y;
-            $this->lon = $this->pos->x;
+            $this->lat = optional($this->pos)->y;
+            $this->lon = optional($this->pos)->x;
         }
     }
 
