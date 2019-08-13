@@ -100,4 +100,15 @@ class ResourceTest extends TestCase
         $this->assertEquals("punksolid@twitter.com",$account->nm);
 
     }
+
+    public function test_firstOrCreate()
+    {
+        $random_name = random_int(1111111111, 9999999999);
+        $resource = Resource::firstOrCreate(['name' => $random_name]);
+        $this->assertInstanceOf(Resource::class,$resource);
+
+        $now_it_will_find = Resource::firstOrCreate(['name' => $random_name]);
+
+        $this->assertEquals($resource->id, $now_it_will_find->id);
+    }
 }

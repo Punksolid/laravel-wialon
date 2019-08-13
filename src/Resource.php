@@ -153,4 +153,20 @@ class Resource extends Item
         return $resources;
     }
 
+    /**
+     * Example of usage Resource::firstOrCreate(['name' => 'my_resource'])
+     *
+     * @param array $attributes
+     * @return Resource
+     */
+    public static function firstOrCreate(array $attributes = []): self
+    {
+        $resource = Resource::findByName($attributes['name']);
+        if (!$resource) {
+            return self::make($attributes['name']);
+        }
+
+        return $resource;
+
+    }
 }
