@@ -106,6 +106,7 @@ class NotificationTest extends TestCase
         );
 
         $this->assertEquals("Velocity Check", $notification->name);
+        $this->assertEquals($resource->id."_".$notification->id,$notification->unique_id);
     }
 
     public function test_create_notification_by_SOS_panic_button()
@@ -164,8 +165,6 @@ class NotificationTest extends TestCase
 
     public function test_create_notification_by_passenger_alarm()
     { }
-
-
 
     public function test_create_notification_by_enter_geofence()
     {

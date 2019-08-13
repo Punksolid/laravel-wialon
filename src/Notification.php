@@ -99,6 +99,8 @@ class Notification
         $params = (new Notification)->constructParamsForCreateOrUpdate($resource, $units, $control_type, $name, $action, $params);
 
         $response = json_decode($api_wialon->resource_update_notification($params));
+
+        $response[1]->unique_id = "{$resource->id}_{$response[1]->id}";
         $unit = new static($response[1]);
 
         $api_wialon->afterCall();
