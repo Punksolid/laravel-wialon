@@ -162,6 +162,7 @@ class Resource extends Item
     public static function firstOrCreate(array $attributes = []): self
     {
         $resource = Resource::findByName($attributes['name']);
+
         if (!$resource) {
             return self::make($attributes['name']);
         }

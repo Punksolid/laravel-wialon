@@ -11,14 +11,16 @@ namespace Punksolid\Wialon\Tests;
 use Orchestra\Testbench\TestCase;
 use Punksolid\Wialon\ControlType;
 use Punksolid\Wialon\Geofence;
-use Punksolid\Wialon\GeofenceControlType;
-use Punksolid\Wialon\PanicButtonControlType;
+use Punksolid\Wialon\Notification\GeofenceControlType;
+use Punksolid\Wialon\Notification\PanicButtonControlType;
 use Punksolid\Wialon\Notification;
+use Punksolid\Wialon\Notification\SensorControlType;
+use Punksolid\Wialon\Notification\SpeedControlType;
 use Punksolid\Wialon\NotificationType;
 use Punksolid\Wialon\Resource;
 use Punksolid\Wialon\Unit;
 use Punksolid\Wialon\Wialon;
-use Punksolid\Wialon\SensorControlType;
+
 
 class NotificationTest extends TestCase
 {
@@ -29,7 +31,8 @@ class NotificationTest extends TestCase
     public function getBasics(): array
     {
         $units = Unit::all()->take(2);
-        $resource = Resource::findByName('punksolid@twitter.com');
+//        $resource = Resource::findByName('punksolid@twitter.com');
+        $resource = Resource::firstOrCreate(['name' => 'punksolid@twitter.com']);
         //        $resource = Resource::all()->first(); //didn't work, maybe exists some rule about creating a notification with incompatible resources
         if ($resource) {
             dump("encontró resource");
@@ -54,7 +57,6 @@ class NotificationTest extends TestCase
 
 
     }
-
 
     public function test_update_txt_notification()
     {
@@ -93,10 +95,11 @@ class NotificationTest extends TestCase
         list($units, $resource) = $this->getBasics();
         $min_speed = 0;
         $max_speed = 60;
-        $control_type = new ControlType('speed', [
-            'max_speed' => $max_speed,
-            'min_speed' => $min_speed
-        ]);
+//        $control_type = new ControlType('speed', [
+//            'max_speed' => $max_speed,
+//            'min_speed' => $min_speed
+//        ]);
+        $control_type = new SpeedControlType($min_speed, $max_speed);
 
         $notification = Notification::make(
             $resource,
@@ -116,9 +119,9 @@ class NotificationTest extends TestCase
         //        $control_type2 = new ControlType('panic_button');
 
         $control_type = new PanicButtonControlType();
-        $action = new Notification\Action("push_messages", [
-            "url" => "http://api.dogoit.com/api/v1/"
-        ]);
+        $action = new Notification\Action("push_messages",
+             "http://api.xxxxxx.com/api/v1/"
+        );
         $notification = Notification::make(
             $resource,
             $units,
@@ -130,11 +133,12 @@ class NotificationTest extends TestCase
         $this->assertEquals("PanicButton", $notification->n);
     }
 
-    public function test_param_message_to_hook()
+    public function test_param_message_to_hook_in_panic_button_type()
     {
         list($units, $resource) = $this->getBasics();
 
-        $control_type = new ControlType('panic_button');
+        $control_type = new PanicButtonControlType();
+
         $notification = Notification::make(
             $resource,
             $units,
@@ -142,7 +146,7 @@ class NotificationTest extends TestCase
             "PanicButton"
         );
 
-        $this->assertEquals("this is the message", $notification->txt);
+        $this->assertEquals("This is the Message", $notification->txt);
     }
 
     public function test_create_notification_by_parameter_in_message()
@@ -204,7 +208,6 @@ class NotificationTest extends TestCase
         $this->assertEquals("1", $notification->trg_p->type);
     }
 
-
     public function test_create_notification_by_digital_input()
     { }
 
@@ -230,13 +233,13 @@ class NotificationTest extends TestCase
         $url = 'http://7b5d47c9.ngrok.io/api/v1/webhook/alert'; // change it everytime that will be tested
 
         list($units, $resource) = $this->getBasics();
-        $control_type = new ControlType('panic_button');
-        $action = new Notification\Action('push_messages', [
-            "url" => 'https://7b5d47c9.ngrok.io'
-        ]);
+
+        $control_type = new PanicButtonControlType();
+        $action = new Notification\Action('push_messages',
+         'https://7b5d47c9.ngrok.io'
+        );
 
         $notification = Notification::make($resource, $units, $control_type, 'SOS_wialon', $action);
-
         $this->assertEquals("SOS_wialon", $notification->name);
     }
 
