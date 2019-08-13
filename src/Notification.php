@@ -8,16 +8,16 @@
 
 namespace Punksolid\Wialon;
 
+use Punksolid\Wialon\Notification\WialonText;
+use Exception;
 use Illuminate\Support\Collection;
 use Punksolid\Wialon\Notification\Action;
+use Punksolid\Wialon\Notification\ControlTypeInterface;
 
 /**
  * Class Notification
+ *
  * @package Punksolid\Wialon
- *
- *
- *
- *
  * @property long $id  notification ID
  * @property text $n  name
  * @property text $txt  text of notification
@@ -34,7 +34,6 @@ use Punksolid\Wialon\Notification\Action;
  * @property text $la  user language (two-lettered code)
  * @property uint $ac  alarms count
  * @property long $un array units/unit groups ids
- *
  * NON WIALON ALIASES
  * @property text $name NAME
  * @property text $control_type
@@ -68,7 +67,7 @@ class Notification
 
     private $control_type_list = [
         'geozone' => GeofenceControlType::class,
-        ];
+    ];
 
     public function __construct($notification = null)
     {
@@ -83,27 +82,110 @@ class Notification
 
     /**
      * @param Resource $resource resource
-     * @param \Punksolid\Wialon\Geofence $geofence
+     * @param Geofence $geofence
      * @param $units
      * @param array $control_type //true = entries to geofence false, exits geofence
      * @param string $name
      * @return null|Notification
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function make(Resource $resource,  Collection $units, ControlTypeInterface $control_type, string $name = '', Action $action = null, $params = null): ?self
-    {
+    public static function make(
+        Resource $resource,
+        Collection $units,
+        ControlTypeInterface $control_type,
+        string $name = '',
+        Action $action = null,
+        $params = null
+    ): ?self {
 
         $api_wialon = new Wialon();
         $api_wialon->beforeCall();
 
-        $params = (new Notification)->constructParamsForCreateOrUpdate($resource, $units, $control_type, $name, $action, $params);
-
+        $params = (new Notification)->encodeParamsForCreateOrUpdate(
+            $resource,
+            $units,
+            $control_type,
+            $name,
+            $action,
+            $params
+        );
+//        $params = (new Notification)->constructParamsForCreateOrUpdate($resource, $units, $control_type, $name, $action, $params);
         $response = json_decode($api_wialon->resource_update_notification($params));
+
+        $response[1]->unique_id = "{$resource->id}_{$response[1]->id}";
         $unit = new static($response[1]);
 
         $api_wialon->afterCall();
 
         return $unit;
+    }
+
+    public function encodeParamsForCreateOrUpdate(
+        Resource $resource = null,
+        Collection $units = null,
+        ControlTypeInterface $control_type = null,
+        string $name = null,
+        Action $action = null,
+        WialonText $text = null
+    ): string {
+
+        $units_arr = $units->pluck("id")->toArray(); // @todo verify if its working with more than one
+        $time = time() - (60 * 10);
+
+        if (is_null($action)) {
+            $action = new Action();
+        }
+        if (is_null($text)) {
+            $text = new WialonText();
+        }
+
+        $id = isset($this->id) ? $this->id : 0;
+
+        $attributes = [
+            "ma" => 0,
+            "fl" => 1,
+            "tz" => 10800,
+            "la" => "en",
+            "act" => [
+                [
+                    "t" => "message",
+                    "p" => function () {
+                    },
+                ],
+            ],
+            "sch" => [
+                "f1" => 0,
+                "f2" => 0,
+                "t1" => 0,
+                "t2" => 0,
+                "m" => 0,
+                "y" => 0,
+                "w" => 0,
+            ],
+            "txt" => "Default Message name=%NOTIFICATION%",
+            "mmtd" => 3600,
+            "cdt" => 10,
+            "mast" => 0,
+            "mpst" => 0,
+            "cp" => 3600,
+            "n" => $name,
+            "un" => $units_arr,
+            "ta" => $time,
+            "td" => 0,
+            "trg" => [
+                "t" => "alarm",
+                "p" => function () {
+                },
+            ],
+            "itemId" => $resource->id,
+            "id" => $id,
+            "callMode" => "create",
+        ];
+        $attributes['act'] = $action->getArrayAttributes();
+        $attributes['txt'] = $text->getText();
+        $attributes['trg'] = $control_type->getArrayAttributes();
+
+        return  json_encode($attributes);
     }
 
     public static function all(): Collection
@@ -117,7 +199,7 @@ class Notification
                 'propName' => 'notifications',
                 'propValueMask' => '*',
                 'sortType' => 'sys_name',
-                'propType' => ''
+                'propType' => '',
             ],
             'force' => 1,
             'flags' => 5129,
@@ -130,10 +212,10 @@ class Notification
         foreach ($response->items as $resource) {
             if (isset($resource->unf)) {
                 $resource_basic_data = $resource;
-                foreach ($resource->unf as $notification ) {
+                foreach ($resource->unf as $notification) {
                     // Name attributes normalization
                     $notification->name = $notification->nm = $notification->n;
-                    $notification->control_type  = $notification->trg;
+                    $notification->control_type = $notification->trg;
                     $notification->actions = $notification->act;
                     $notification->text = $notification->txt;
                     $notification->resource = $resource_basic_data;
@@ -145,7 +227,83 @@ class Notification
         }
 
         $api_wialon->afterCall();
+
         return $notifications;
+    }
+
+    /**
+     * @param $unique_id Unique id is in format resourceId_localID
+     * @return Notification|null
+     * @throws WialonErrorException
+     */
+    public static function findByUniqueId($unique_id)
+    {
+        $api_wialon = new Wialon();
+        $api_wialon->beforeCall();
+
+        $explode = explode('_', $unique_id);
+        $resource_id = $explode[0];
+        $notification_id = $explode[1];
+        $response = json_decode(
+            $api_wialon->resource_get_notification_data(
+                [
+                    'itemId' => $resource_id,
+                    'col' => [$notification_id],
+                    'flags' => '0x0' //0x0 , 0x1, 0x2
+                ]
+            )
+        );
+
+
+        if (isset($response->error)) {
+            return null;
+        }
+
+        $unit = new static($response[0]);
+
+        $api_wialon->afterCall();
+
+        return $unit;
+    }
+
+    public function destroy(): bool
+    {
+        $api_wialon = new Wialon();
+        $api_wialon->beforeCall();
+
+        $response = json_decode(
+            $api_wialon->resource_update_notification(
+                [
+                    'itemId' => $this->resource->id,
+                    'id' => $this->id,
+                    'callMode' => 'delete',
+                ]
+            )
+        );
+
+        $api_wialon->afterCall();
+        if (isset($response[0]) && $response[0] == $this->id) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function update()
+    {
+
+        $api_wialon = new Wialon();
+        $api_wialon->beforeCall();
+
+        $params = self::constructParamsForCreateOrUpdate();
+
+        $response = json_decode($api_wialon->resource_update_notification(json_encode($this)));
+
+        $notification = new static($response[1]);
+
+        $api_wialon->afterCall();
+
+        return $notification;
     }
 
     /**
@@ -156,11 +314,18 @@ class Notification
      * @param Action $action
      * @param $params
      * @return string
+     * @deprecated
      */
-    public function constructParamsForCreateOrUpdate(Resource $resource = null, Collection $units = null, ControlTypeInterface $control_type = null, string $name = null, Action $action = null, $params = null): string
-    {
+    public function constructParamsForCreateOrUpdate(
+        Resource $resource = null,
+        Collection $units = null,
+        ControlTypeInterface $control_type = null,
+        string $name = null,
+        Action $action = null,
+        $params = null
+    ): string {
         $static = $update_flag = !(isset($this) && get_class($this) == __CLASS__);
-        if ($update_flag){ // updating // TODO Not Working
+        if ($update_flag) { // updating // TODO Not Working
             $units_arr = $this->getUnits()->pluck('id')->first(); // @todo verify if its working with more than one
 
             $time = time() - (60 * 10);
@@ -207,7 +372,7 @@ class Notification
                 "fl": 1,
                 "tz": 10800,
                 "la": "en",
-                ' . $act . '
+                '.$act.'
                 "sch": {
                     "f1": 0,
                     "f2": 0,
@@ -217,98 +382,33 @@ class Notification
                     "y": 0,
                     "w": 0
                 },
-                "txt": ' . $message . ',
+                "txt": '.$message.',
                 "mmtd": 3600,
                 "cdt": 10,
                 "mast": 0,
                 "mpst": 0,
                 "cp": 3600,
-                "n": "' . $name . '",
-                "un": [' . $units_arr . '],
-                "ta": ' . $time . ',
+                "n": "'.$name.'",
+                "un": ['.$units_arr.'],
+                "ta": '.$time.',
                 "td": 0,
-                ' . $trg . '
-                "itemId": ' . $resource->id . ',
-                "id": ' . $id . ',
+                '.$trg.'
+                "itemId": '.$resource->id.',
+                "id": '.$id.',
                 "callMode": "create"
             }';
+
         return $params;
-    }
-
-    public  function destroy():bool
-    {
-        $api_wialon = new Wialon();
-        $api_wialon->beforeCall();
-
-        $response = json_decode($api_wialon->resource_update_notification([
-            'itemId' => $this->resource->id,
-            'id' => $this->id,
-            'callMode' => 'delete'
-        ]));
-
-        $api_wialon->afterCall();
-        if (isset($response[0]) && $response[0] == $this->id){
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @param $unique_id Unique id is in format resourceId_localID
-     * @return Notification|null
-     * @throws WialonErrorException
-     */
-    public static function findByUniqueId($unique_id)
-    {
-        $api_wialon = new Wialon();
-        $api_wialon->beforeCall();
-
-        $explode = explode('_', $unique_id);
-        $resource_id = $explode[0];
-        $notification_id = $explode[1];
-        $response = json_decode($api_wialon->resource_get_notification_data([
-            'itemId' => $resource_id,
-            'col' => [$notification_id],
-            'flags' => '0x0' //0x0 , 0x1, 0x2
-        ]));
-
-
-        if (isset($response->error)){
-            return null;
-        }
-
-        $unit = new static($response[0]);
-
-        $api_wialon->afterCall();
-
-        return $unit;
-    }
-
-    public function update()
-    {
-
-        $api_wialon = new Wialon();
-        $api_wialon->beforeCall();
-
-        $params = self::constructParamsForCreateOrUpdate();
-
-        $response = json_decode($api_wialon->resource_update_notification(json_encode($this)));
-
-        $notification = new static($response[1]);
-
-        $api_wialon->afterCall();
-
-        return $notification;
     }
 
     /**
      * Get the related units objects based on the array of units ids
+     *
      * @return Collection
      */
     public function getUnits(): ?Collection
     {
-        if (is_array($this->un)){
+        if (is_array($this->un)) {
             $this->units = Unit::findMany($this->un);
         }
 
@@ -317,6 +417,7 @@ class Notification
 
     /**
      * Gets PHP ControlType Object
+     *
      * @return ControlTypeInterface
      */
     public function getControlType(): ControlTypeInterface
@@ -333,4 +434,13 @@ class Notification
     {
 
     }
+
+
+    /**
+     * funciona
+     ** {"ma":0,"fl":1,"tz":10800,"la":"en","act":[{"t":"message","p":{}}],"sch":{"f1":0,"f2":0,"t1":0,"t2":0,"m":0,"y":0,"w":0},"txt":"DefaultMessagename=%NOTIFICATION%","mmtd":3600,"cdt":10,"mast":0,"mpst":0,"cp":3600,"n":"PanicButton","un":[734477,717361],"ta":1565684195,"td":0,"trg":{"t":"alarm","p":{}},"itemId":18145865,"id":0,"callMode":"create"}
+     * codificado automatico
+     *  {"ma":0,"fl":1,"tz":10800,"la":"en","act":[{"t":"message","p":[]}],"sch":{"f1":0,"f2":0,"t1":0,"t2":0,"m":0,"y":0,"w":0},"txt":"DefaultMessagename=%NOTIFICATION%","mmtd":3600,"cdt":10,"mast":0,"mpst":0,"cp":3600,"n":"PanicButton","un":[734477,717361],"ta":1565683470,"td":0,"trg":{"t":"alarm","p":[]},"itemId":18145865,"id":0,"callMode":"create"}"
+     *****                                                                                                                                                                                                                                      ******
+     */
 }

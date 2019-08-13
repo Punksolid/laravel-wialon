@@ -10,6 +10,7 @@ namespace Punksolid\Wialon;
 
 
 use http\Exception;
+use Punksolid\Wialon\Notification\ControlTypeInterface;
 
 /**
  * @deprecated
@@ -92,4 +93,6 @@ class ControlType implements ControlTypeInterface
     {
         return $this->trg;
     }
+
+
 }

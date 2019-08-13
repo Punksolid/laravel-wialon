@@ -11,8 +11,18 @@ namespace Punksolid\Wialon\Notification;
 
 class Action
 {
-    public function __construct($type, $params = [])
+    /**
+     * @var array
+     */
+    private $params;
+    /**
+     * @var string
+     */
+    private $url;
+
+    public function __construct($type = 'push_messages', $url = "https://localhost")
     {
+
         // #ref https://sdk.wialon.com/wiki/en/kit/remoteapi/apiref/resource/get_notification_data#action_types
         $actions_admitted = [
 //            'email',
@@ -43,12 +53,48 @@ class Action
                 $this->act = " \"act\": [{
                             \"t\": \"push_messages\",
                             \"p\": {
-                                \"url\": \"{$params['url']}\",
+                                \"url\": \"{$url}\",
                                 \"get\": \"0\"
                             }
                         }],";
                 break;
         endswitch;
+
+        $this->url = $url;
+    }
+
+    public function getArrayAttributes()
+    {
+        // [{"t":"message","p":{}}]
+        return [
+            0 => (object)[
+                "t" => "message",
+                "p" => (object)[
+                    "url" => $this->url,
+                    "get" => 0
+                ]
+            ]
+
+        ];
+//        return [
+//
+//           "t" => "push_messages",
+//            "p" => [
+//                "url" => $this->url,
+//                "get" => 0
+//            ]
+////           "p" => '{"url":"'.$this->url.'","get":0}'
+//        ];
+    }
+
+    public static function getDefaults()
+    {
+        return [
+            0 => [
+                "t" => "message",
+                "p" => function () {},
+            ]
+        ];
     }
 
     public function getAct()

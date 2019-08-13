@@ -1,8 +1,7 @@
 <?php
 
 
-namespace Punksolid\Wialon;
-
+namespace Punksolid\Wialon\Notification;
 
 
 
@@ -25,5 +24,13 @@ class PanicButtonControlType implements ControlTypeInterface
                             }
                         },
 TAG;
+    }
+
+    public function getArrayAttributes(): array
+    {
+        return [
+          "t" => "alarm",
+          "p" => function(){}
+        ];
     }
 }
