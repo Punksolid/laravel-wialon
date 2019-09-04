@@ -95,7 +95,8 @@ class Notification
         ControlTypeInterface $control_type,
         string $name = '',
         Action $action = null,
-        $params = null
+        $wialon_text_obj = null,
+        array $override_params = []
     ): ?self {
 
         $api_wialon = new Wialon();
@@ -107,7 +108,8 @@ class Notification
             $control_type,
             $name,
             $action,
-            $params
+            $wialon_text_obj,
+            $override_params
         );
 //        $params = (new Notification)->constructParamsForCreateOrUpdate($resource, $units, $control_type, $name, $action, $params);
         $response = json_decode($api_wialon->resource_update_notification($params));
@@ -126,7 +128,8 @@ class Notification
         ControlTypeInterface $control_type = null,
         string $name = null,
         Action $action = null,
-        WialonText $text = null
+        WialonText $wialon_text_obj = null,
+        array $override_params = []
     ): string {
 
         $units_arr = $units->pluck("id")->toArray(); // @todo verify if its working with more than one
@@ -135,15 +138,15 @@ class Notification
         if (is_null($action)) {
             $action = new Action();
         }
-        if (is_null($text)) {
-            $text = new WialonText();
+        if (is_null($wialon_text_obj)) {
+            $wialon_text_obj = new WialonText();
         }
 
         $id = isset($this->id) ? $this->id : 0;
 
         $attributes = [
             "ma" => 0,
-            "fl" => 1,
+            "fl" => 1, //  0 para solo una notificacion al cambiar status 1 para siempre
             "tz" => 10800,
             "la" => "en",
             "act" => [
@@ -182,8 +185,9 @@ class Notification
             "callMode" => "create",
         ];
         $attributes['act'] = $action->getArrayAttributes();
-        $attributes['txt'] = $text->getText();
+        $attributes['txt'] = $wialon_text_obj->getText();
         $attributes['trg'] = $control_type->getArrayAttributes();
+        $attributes = array_merge($attributes, $override_params);
 
         return  json_encode($attributes);
     }

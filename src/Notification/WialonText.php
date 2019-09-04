@@ -36,13 +36,18 @@ class WialonText
         'NOTIFICATION' => '%NOTIFICATION%',
     ];
 
-    public function __construct($personalized_params = null, $default_parameters = true)
+    public function __construct($personalized_params = null, $include_defaults = true)
     {
-        if (!$default_parameters) {
+        if (!$include_defaults) {
             $this->parameters = [];
         }
         if ($personalized_params) {
-            $this->parameters = array_merge($this->parameters, $personalized_params);
+            if (is_array($personalized_params)){
+                $this->parameters = array_merge($this->parameters, $personalized_params);
+            }
+            if (is_string($personalized_params)) {
+                $this->parameters = array_merge($this->parameters,['' => $personalized_params]);
+            }
         }
     }
 
@@ -68,6 +73,7 @@ class WialonText
         if ($string){
             return $string;
         }
+
         return urldecode(http_build_query($this->parameters));
     }
 }
