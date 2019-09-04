@@ -127,7 +127,9 @@ class NotificationTest extends TestCase
             $units,
             $control_type,
             "PanicButton",
-            $action
+            $action,
+            null,
+            ['fl' => 0]
         );
 
         $this->assertEquals("PanicButton", $notification->n);
@@ -138,15 +140,20 @@ class NotificationTest extends TestCase
         list($units, $resource) = $this->getBasics();
 
         $control_type = new PanicButtonControlType();
+        $wialon_text = new Notification\WialonText('This is the Message',false);
 
+        $wialon_text->getText();
         $notification = Notification::make(
             $resource,
             $units,
             $control_type,
-            "PanicButton"
+            "PanicButton",
+            null,
+            $wialon_text
+
         );
 
-        $this->assertEquals("This is the Message", $notification->txt);
+        $this->assertEquals("=This is the Message", $notification->txt);
     }
 
     public function test_create_notification_by_parameter_in_message()
