@@ -306,6 +306,30 @@ class Wialon
     }
 
     /**
+     * Read more from https://sdk.wialon.com/wiki/en/sidebar/remoteapi/apiref/requests/address
+     * @param string $lon
+     * @param string $lat
+     * @return mixed
+     * @throws WialonErrorException
+     */
+    public function getAddress($lon='',$lat='')
+    {
+        $this->beforeCall();
+        $str = 'coords=[{"lon":'.$lon.',"lat":'.$lat.'}]&flags=1255211008&uid='.$this->user->id;
+
+        $handle = curl_init();
+        $defaults = array(
+            CURLOPT_URL => "https://geocode-maps.wialon.com/hst-api.wialon.com/gis_geocode?".$str,
+            CURLOPT_POST => true,
+            CURLOPT_RETURNTRANSFER => true,
+        );
+        curl_setopt_array($handle, $defaults);
+        $this->afterCall();
+        $this->response = curl_exec($handle);
+        return json_decode($this->response);
+    }
+
+    /**
      * @deprecated  use Unit::make instead
      * @param $name
      * @return Unit
