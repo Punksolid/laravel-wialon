@@ -13,8 +13,9 @@ class WialonServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-
-
+        $this->publishes([
+            __DIR__.'/config/wialon.php' => config_path('wialon.php'),
+        ], 'wialon');
     }
 
     /**

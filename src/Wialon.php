@@ -38,7 +38,7 @@ class Wialon
     {
 
 //        $this->token = \Config::get("services",$token);
-        $this->token = config('services.wialon.token', $token);
+        $this->token = config('wialon.token', $token);
 
         $this->sid = $sid;
         $this->default_params = array_replace(array(), (array)$extra_params);
