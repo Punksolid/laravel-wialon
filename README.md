@@ -15,7 +15,7 @@ Use
 --------
 List all units
 ```php 
-<?php
+
         $units = \Punksolid\Wialon\Unit::all();
         
         dd($units);
@@ -59,7 +59,7 @@ List all units
 ```
 Get all notifications
 ```php
-<?php
+
         $notifications = Notification::all();
         dd($notifications);
         
@@ -99,7 +99,12 @@ Get all notifications
          */
 
 ```
-
+Find a notification by ID
+To find a notification you need the id and the resource->id this method finds it using an underscore as a eparator
+```php
+        $found_notification = Notification::findByUniqueId("{$resource_id}_{$notification_id}");
+```
 
 Better documentation later, you could check the methods used in the testing classes available
+Pull requests accepted
         
