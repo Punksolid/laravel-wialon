@@ -37,9 +37,7 @@ class Wialon
     function __construct($scheme = 'http', $host = 'hst-api.wialon.com', $port = '', $sid = '', $extra_params = array(), $token = null)
     {
 
-//        $this->token = \Config::get("services",$token);
-        $this->token = config('wialon.token', $token);
-
+        $this->token = config('services.wialon.token', $token);
         $this->sid = $sid;
         $this->default_params = array_replace(array(), (array)$extra_params);
         $this->base_api_url = sprintf('%s://%s%s/wialon/ajax.html?', $scheme, $host, mb_strlen($port) > 0 ? ':' . $port : '');
@@ -375,11 +373,11 @@ class Wialon
     /** Unknonwn methods hadler */
     public function __call($name, $args)
     {
+
         if (count($args) === 0) {
             $response = $this->call($name, '{}');
 
         } else {
-//            dump($args[0]);
             $response = $this->call($name, $args[0]);
         }
         $decoded = json_decode($response);

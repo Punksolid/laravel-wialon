@@ -43,7 +43,6 @@ class Resource extends Item
     {
         $api_wialon = new Wialon();
         $api_wialon->beforeCall();
-
         $params = [
             "creatorId" => $api_wialon->user->id, //obligatorio
             "name" => $name,

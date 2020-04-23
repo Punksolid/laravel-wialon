@@ -2,9 +2,10 @@
 
 namespace Punksolid\Wialon\Tests;
 
+use PHPUnit\Framework\TestCase;
 use Punksolid\Wialon\Notification\Action;
 
-class ActionTest extends \PHPUnit_Framework_TestCase
+class ActionTest extends TestCase
 {
 
     public function testGetAct()
